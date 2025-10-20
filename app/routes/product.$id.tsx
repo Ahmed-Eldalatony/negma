@@ -1,7 +1,7 @@
 import type { Route } from "./+types/product.$id";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
-import { ArrowRight, Star, Check, Truck, Shield, Users, Zap, ChevronDown, MessageCircle, Plus, Minus, User, Phone, MapPin } from "lucide-react";
+import { ArrowRight, Star, Check, Truck, Shield, Users, Zap, ChevronDown, MessageCircle, User, Phone, MapPin } from "lucide-react";
 import ProductImageGallery from "~/components/ProductImageGallery";
 import ColorSelector from "~/components/ColorSelector";
 import OfferCard from "~/components/OfferCard";
@@ -27,7 +27,7 @@ export function meta({ params }: Route.MetaArgs) {
 export default function ProductPage() {
   const params = useParams();
   const productId = params.id || "1";
-  
+
   const product = products.find(p => p.id === productId) || products[0];
   const [selectedOffer, setSelectedOffer] = useState(product.offers?.[0]?.id || '');
   const [selectedColor, setSelectedColor] = useState(product.colors?.[3] || '');
@@ -51,7 +51,7 @@ export default function ProductPage() {
       <div className="p-4 space-y-3">
         <div className="relative">
           {product.rating && (
-            <Badge 
+            <Badge
               className="absolute top-3 right-3 z-10 bg-primary text-primary-foreground text-sm font-bold flex items-center gap-1"
               data-testid="badge-rating"
             >
@@ -60,8 +60,8 @@ export default function ProductPage() {
             </Badge>
           )}
           {product.discount && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute top-3 left-3 z-10 text-sm font-bold"
               data-testid="badge-discount-main"
             >
@@ -133,7 +133,7 @@ export default function ProductPage() {
           </div>
         </div>
 
-        <Button 
+        <Button
           className="w-full font-bold text-sm h-12 bg-primary hover:bg-primary/90"
           onClick={() => console.log('Order placed')}
           data-testid="button-order-main"
@@ -288,8 +288,8 @@ export default function ProductPage() {
         <div className="space-y-3">
           <h3 className="text-lg font-bold">ماذا يقول عملاؤنا</h3>
           <div className="bg-muted p-3 rounded-md text-center">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full"
               onClick={() => console.log('Write review clicked')}
               data-testid="button-write-review"
@@ -297,7 +297,7 @@ export default function ProductPage() {
               اكتب مراجعتك
             </Button>
           </div>
-          
+
           <div className="space-y-3">
             {reviews.map((review) => (
               <div key={review.id} className="border rounded-md p-4" data-testid={`review-${review.id}`}>
@@ -313,9 +313,9 @@ export default function ProductPage() {
                   </div>
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`h-3 w-3 ${i < review.rating ? 'fill-red-500 text-red-500' : 'text-gray-300'}`} 
+                      <Star
+                        key={i}
+                        className={`h-3 w-3 ${i < review.rating ? 'fill-red-500 text-red-500' : 'text-gray-300'}`}
                       />
                     ))}
                   </div>
@@ -325,8 +325,8 @@ export default function ProductPage() {
             ))}
           </div>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full"
             onClick={() => console.log('Show more reviews')}
             data-testid="button-more-reviews"
@@ -339,14 +339,14 @@ export default function ProductPage() {
       {/* Fixed Bottom Order Button */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t  z-50 p-3">
         <div className="max-w-mobile mx-auto space-y-2">
-          <Button 
+          <Button
             className="w-full font-bold text-sm h-11 bg-primary hover:bg-primary/90"
             onClick={() => console.log('Order placed')}
             data-testid="button-order-fixed"
           >
             اطلب الآن - الدفع عند الاستلام
           </Button>
-          
+
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div className="flex items-center justify-center gap-1">
               <Check className="h-3 w-3 text-destructive" />
