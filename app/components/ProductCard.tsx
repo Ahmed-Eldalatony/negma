@@ -16,8 +16,8 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className=" relattive aspect-square bg-muted overflow-hidden mb-2">
           {product.discount && (
             <Badge
-              variant="secondary"
-              className="!absolute bg-red-500  top-2 right-2 z-10 text-xs font-bold"
+              variant="destructive"
+              className="!absolute   top-2 right-2 z-10 text-xs font-bold"
               data-testid={`badge-discount-${product.id}`}
             >
               {product.discount}% خصم

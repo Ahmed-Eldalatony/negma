@@ -14,7 +14,7 @@ import { Toaster } from "~/components/ui/toaster";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import "./index.css";
-// import "./app.css";
+import "./app.css";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -52,7 +52,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <TooltipProvider>
-          <div className="max-w-md mx-auto bg-background">
+          <div className="max-w-md  mx-auto bg-background">
             <Outlet />
           </div>
           <Toaster />

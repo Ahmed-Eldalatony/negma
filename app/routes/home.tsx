@@ -24,7 +24,7 @@ export default function Home() {
       <div className="sticky top-0 bg-primary text-primary-foreground z-50 py-3 px-4">
         <div className="flex items-center justify-center gap-2 text-sm font-medium">
           <Rocket className="h-4 w-4" />
-          <span data-testid="text-banner-promo">
+          <span data-testid="text-banner-promo bg-black">
             شحن مجاني على الطلبات التي تزيد عن 50$
           </span>
         </div>
