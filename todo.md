@@ -1,1 +1,0 @@
-- fix the color of the badge
