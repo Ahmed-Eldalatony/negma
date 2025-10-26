@@ -1,13 +1,15 @@
 import { Link } from 'react-router';
+import { cn } from '@/lib/utils';
 import type { Category } from '@/shared/mock-data';
 
 interface CategoryCardProps {
 	category: Category;
+	className?: string;
 }
 
-export default function CategoryCard({ category }: CategoryCardProps) {
+export default function CategoryCard({ category, className }: CategoryCardProps) {
 	return (
-		<Link to={`/category/${category.id}`}>
+		<Link className={cn(className)} to={`/category/${category.id}`}>
 			<div className="w-full flex-shrink-0" data-testid={`card-category-${category.id}`}>
 				<div className="bg-muted mb-2 aspect-square overflow-hidden rounded-md">
 					<img

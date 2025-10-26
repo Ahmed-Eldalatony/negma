@@ -79,7 +79,11 @@ export default function Home() {
 					</h2>
 					<div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
 						{categories.map((category) => (
-							<CategoryCard key={category.id} category={category} />
+							<CategoryCard
+								className={'min-w-28'}
+								key={category.id}
+								category={category}
+							/>
 						))}
 					</div>
 				</section>
