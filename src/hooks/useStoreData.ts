@@ -1,6 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import { useStoreDataStore } from '../store';
+import { useEffect, useState } from 'react';
+// import { useStoreDataStore } from '../store';
 import { api } from '../lib/api';
 
 interface Pixel {
@@ -39,30 +38,28 @@ export interface StoreData {
 }
 
 export const useStore = () => {
-	const { storeData, setStoreData } = useStoreDataStore();
-
-	const query = useQuery<StoreData>({
-		queryKey: ['store'],
-		queryFn: async () => {
-			try {
-				const res = await api.get('v1/store/hwm.negma.vercel.app');
-				console.log('======', res);
-				return res;
-			} catch (error) {
-				console.error('API error:', error);
-				throw error;
-			}
-		},
-		staleTime: Infinity,
-		enabled: !storeData,
-	});
-	// console.log(query);
+	const [data, setData] = useState<StoreData | null>(null);
+	const [loading, setLoading] = useState<boolean>(true);
+	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		if (query.isSuccess && query.data) {
-			setStoreData(query.data);
-		}
-	}, [query.isSuccess, query.data, setStoreData]);
+		const fetchData = async () => {
+			try {
+				setLoading(true);
+				setError(null);
+				const res = await api.get('v1/store/hwm.negma.vercel.app');
+				console.log('Store data response:', res);
+				setData(res.data);
+			} catch (err) {
+				console.error('API error:', err);
+				setError(err instanceof Error ? err.message : 'An error occurred');
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchData();
+	}, []);
 
-	return query.data;
+	console.log('Store data:', data);
+	return { data, loading, error };
 };

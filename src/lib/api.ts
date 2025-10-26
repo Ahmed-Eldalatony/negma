@@ -1,9 +1,22 @@
-const BASE_URL = 'boddasaad.me/api/';
+const BASE_URL = 'https://boddasaad.me/api/';
 
 export const api = {
 	get: async (endpoint: string) => {
-		const res = await fetch(`${BASE_URL}${endpoint}`);
-		if (!res.ok) throw new Error('API error');
-		return res.json();
+		try {
+			const response = await fetch(`${BASE_URL}${endpoint}`);
+			console.log('URL', BASE_URL + endpoint);
+			console.log('Response status:', response.status);
+			
+			if (!response.ok) {
+				throw new Error(`API error: ${response.status} ${response.statusText}`);
+			}
+			
+			const data = await response.json();
+			console.log('API response data:', data);
+			return { data };
+		} catch (error) {
+			console.error('API error:', error);
+			throw error;
+		}
 	},
 };

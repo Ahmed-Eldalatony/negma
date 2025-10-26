@@ -27,7 +27,7 @@ interface Banner {
 	description: string;
 }
 
-interface StoreData {
+export interface StoreData {
 	id: number;
 	name: string;
 	domain: string;
@@ -143,12 +143,40 @@ export const useStoreDataStore = create<{
 	storeData: StoreData | null;
 	setStoreData: (data: StoreData) => void;
 	clearStoreData: () => void;
+	isLoading: boolean;
+	setLoading: (isLoading: boolean) => void;
+	error: string | null;
+	setError: (error: string | null) => void;
+	fetchStoreData: () => Promise<void>;
 }>()(
 	persist(
 		(set) => ({
 			storeData: null,
 			setStoreData: (data: StoreData) => set({ storeData: data }),
 			clearStoreData: () => set({ storeData: null }),
+			isLoading: false,
+			setLoading: (isLoading: boolean) => set({ isLoading }),
+			error: null,
+			setError: (error: string | null) => set({ error }),
+			fetchStoreData: async () => {
+				try {
+					set({ isLoading: true, error: null });
+					
+					const response = await fetch('https://boddasaad.me/api/v1/store/hwm.negma.vercel.app');
+					
+					if (!response.ok) {
+						throw new Error(`API error: ${response.status} ${response.statusText}`);
+					}
+					
+					const result = await response.json();
+					const storeData: StoreData = result.data;
+					
+					set({ storeData, isLoading: false });
+				} catch (error) {
+					console.error('Error fetching store data:', error);
+					set({ error: error instanceof Error ? error.message : 'An error occurred', isLoading: false });
+				}
+			},
 		}),
 		{
 			name: 'store-data-storage',

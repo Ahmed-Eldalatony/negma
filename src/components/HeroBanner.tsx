@@ -1,17 +1,11 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useStoreDataStore } from '@/store';
+// import { useStoreDataStore } from '@/store';
 
 export default function HeroBanner() {
-	const { storeData } = useStoreDataStore();
-	const banners =
-		storeData?.banners.map((b, i) => ({
-			id: i + 1,
-			image: b.url,
-			titleAr: b.description,
-			subtitleAr: '',
-		})) || [];
+	// const { storeData } = useStoreDataStore();
+	const banners: any[] = [];
 	const [currentSlide, setCurrentSlide] = useState(0);
 
 	const nextSlide = () => {

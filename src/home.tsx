@@ -8,8 +8,8 @@ import BottomNav from '@/components/BottomNav';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { categories, products } from '@/shared/mock-data';
-import { useStoreDataStore } from './store';
+import { useStoreDataStore, type StoreData } from './store';
+import { categories, products, type Category, type Product } from '@/shared/mock-data'; // fallback to mock data
 
 export function meta({}: any) {
 	return [
@@ -19,15 +19,31 @@ export function meta({}: any) {
 }
 
 export default function Home() {
-	const { storeData } = useStoreDataStore();
-	// console.log('=======', storeData);
+	const { storeData, isLoading, error, fetchStoreData } = useStoreDataStore();
+
+	useEffect(() => {
+		if (!storeData && !isLoading) {
+			fetchStoreData();
+		}
+	}, [storeData, isLoading, fetchStoreData]);
 
 	useEffect(() => {
 		if (storeData) {
 			document.title = `${storeData?.settings.name} - الرئيسية`;
 		}
 	}, [storeData]);
-	console.log(storeData);
+
+	if (isLoading) {
+		return <div className="flex h-screen items-center justify-center">جاري التحميل...</div>;
+	}
+
+	if (error) {
+		console.error('Error loading store data:', error);
+		// Fallback to mock data if there's an error
+		console.log('Using mock data due to error');
+	}
+
+	console.log(storeData.data);
 
 	return (
 		<div className="mb-20 min-h-screen">
@@ -78,9 +94,9 @@ export default function Home() {
 							<img src={storeData.logo} alt="Logo" className="h-8 w-8" />
 						) : (
 							<Asterisk className="h-6 w-6" />
-						)}{' '}
+						)}
 						<span className="text-xl font-bold" data-testid="text-logo">
-							{storeData?.settings.name || 'نجمة'}{' '}
+							{storeData?.settings.name || 'نجمة'}
 						</span>
 					</div>
 				</div>
@@ -94,13 +110,28 @@ export default function Home() {
 						التصنيفات
 					</h2>
 					<div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
-						{categories.map((category) => (
-							<CategoryCard
-								className={'min-w-28'}
-								key={category.id}
-								category={category}
-							/>
-						))}
+						{storeData && storeData.banners && storeData.banners.length > 0
+							? storeData.banners
+									.map((banner, index) => ({
+										id: `banner-${index}`,
+										name: banner.description,
+										nameAr: banner.description,
+										image: banner.url,
+									}))
+									.map((category: Category) => (
+										<CategoryCard
+											className={'min-w-28'}
+											key={category.id}
+											category={category}
+										/>
+									))
+							: categories.map((category) => (
+									<CategoryCard
+										className={'min-w-28'}
+										key={category.id}
+										category={category}
+									/>
+								))}
 					</div>
 				</section>
 
@@ -109,9 +140,26 @@ export default function Home() {
 						المنتجات
 					</h2>
 					<div className="grid grid-cols-2 gap-3">
-						{products.map((product) => (
-							<ProductCard key={product.id} product={product} />
-						))}
+						{storeData && storeData.banners && storeData.banners.length > 0
+							? storeData.banners
+									.slice(0, 4)
+									.map((banner, index) => ({
+										id: `banner-product-${index}`,
+										name: banner.description,
+										nameAr: banner.description,
+										image: banner.url,
+										price: 0,
+										originalPrice: 0,
+										category: '',
+										categoryAr: '',
+										inStock: true,
+									}))
+									.map((product: Product) => (
+										<ProductCard key={product.id} product={product} />
+									))
+							: products.map((product) => (
+									<ProductCard key={product.id} product={product} />
+								))}
 					</div>
 				</section>
 			</div>
