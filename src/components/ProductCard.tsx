@@ -1,71 +1,93 @@
-import { Link } from "react-router";
-import { Badge } from "@/components/ui/badge";
-import type { Product } from "@/shared/mock-data";
+import { Link } from 'react-router';
+import { Badge } from '@/components/ui/badge';
+import { Heart } from 'lucide-react';
+import type { Product } from '@/shared/mock-data';
+import { useFavoritesStore } from '@/store';
 
 interface ProductCardProps {
-  product: Product;
+	product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  return (
-    <Link to={`/product/${product.id}`}>
-      <div
-        className="relative group border rounded-md h-[280px] border-gray-300  overflow-hidden"
-        data-testid={`card-product-${product.id}`}
-      >
-        <div className=" relattive aspect-square bg-muted overflow-hidden mb-2">
-          {product.discount && (
-            <Badge
-              variant="destructive"
-              className="!absolute   top-2 right-2 z-10 text-xs font-bold"
-              data-testid={`badge-discount-${product.id}`}
-            >
-              {product.discount}% خصم
-            </Badge>
-          )}
-          <img
-            src={product.image}
-            alt={product.nameAr}
-            className="w-full h-full  object-cover"
-            data-testid={`img-product-${product.id}`}
-          />
-        </div>
+	const { toggleFavorite, isFavorite } = useFavoritesStore();
 
-        <div className="space-y-1 pr-2">
-          <h3
-            className="font-medium text-sm line-clamp-2 text-start leading-tight"
-            data-testid={`text-name-${product.id}`}
-          >
-            {product.nameAr}
-          </h3>
+	const handleFavoriteClick = (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		toggleFavorite(product.id);
+	};
 
-          <div className="flex items-center gap-2">
-            {product.originalPrice && (
-              <span
-                className="text-xs text-muted-foreground line-through"
-                data-testid={`text-original-price-${product.id}`}
-              >
-                ${product.originalPrice.toFixed(2)}
-              </span>
-            )}
-            <span
-              className="text-base font-bold"
-              data-testid={`text-price-${product.id}`}
-            >
-              ${product.price.toFixed(2)}
-            </span>
-          </div>
+	return (
+		<Link to={`/product/${product.id}`}>
+			<div
+				className="group relative h-[280px] overflow-hidden rounded-md border border-gray-300"
+				data-testid={`card-product-${product.id}`}
+			>
+				<div className="relattive bg-muted mb-2 aspect-square overflow-hidden">
+					{product.discount && (
+						<Badge
+							variant="destructive"
+							className="!absolute top-2 right-2 z-10 text-xs font-bold"
+							data-testid={`badge-discount-${product.id}`}
+						>
+							{product.discount}% خصم
+						</Badge>
+					)}
+					<button
+						onClick={handleFavoriteClick}
+						className="absolute top-2 left-2 z-10 rounded-full bg-white/80 p-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-white"
+					>
+						<Heart
+							className={`h-5 w-5 ${
+								isFavorite(product.id)
+									? 'fill-red-500 text-red-500'
+									: 'text-gray-600'
+							}`}
+						/>
+					</button>
+					<img
+						src={product.image}
+						alt={product.nameAr}
+						className="h-full w-full object-cover"
+						data-testid={`img-product-${product.id}`}
+					/>
+				</div>
 
-          {!product.inStock && (
-            <p
-              className="text-xs text-destructive"
-              data-testid={`text-stock-${product.id}`}
-            >
-              نفذت الكمية
-            </p>
-          )}
-        </div>
-      </div>
-    </Link>
-  );
+				<div className="space-y-1 pr-2">
+					<h3
+						className="line-clamp-2 text-start text-sm leading-tight font-medium"
+						data-testid={`text-name-${product.id}`}
+					>
+						{product.nameAr}
+					</h3>
+
+					<div className="flex items-center gap-2">
+						{product.originalPrice && (
+							<span
+								className="text-muted-foreground text-xs line-through"
+								data-testid={`text-original-price-${product.id}`}
+							>
+								${product.originalPrice.toFixed(2)}
+							</span>
+						)}
+						<span
+							className="text-base font-bold"
+							data-testid={`text-price-${product.id}`}
+						>
+							${product.price.toFixed(2)}
+						</span>
+					</div>
+
+					{!product.inStock && (
+						<p
+							className="text-destructive text-xs"
+							data-testid={`text-stock-${product.id}`}
+						>
+							نفذت الكمية
+						</p>
+					)}
+				</div>
+			</div>
+		</Link>
+	);
 }
