@@ -1,4 +1,4 @@
-import { Minus, Plus, Trash2, ArrowRight } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowRight, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router';
 import { useCartStore } from '@/store';
 import { products, Product } from '@/shared/mock-data';
@@ -39,7 +39,7 @@ export default function CartPage() {
 
 				<div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
 					<div className="bg-muted mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-						<Trash2 className="text-muted-foreground h-8 w-8" />
+						<ShoppingCart className="text-muted-foreground h-8 w-8" />
 					</div>
 					<h2 className="mb-2 text-xl font-semibold">السلة فارغة</h2>
 					<p className="text-muted-foreground mb-6">
