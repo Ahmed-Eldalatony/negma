@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Menu, Rocket, Asterisk } from 'lucide-react';
 import { Link } from 'react-router';
 import HeroBanner from '@/components/HeroBanner';
@@ -8,6 +9,7 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { categories, products } from '@/shared/mock-data';
+import { useStoreDataStore } from './store';
 
 export function meta({}: any) {
 	return [
@@ -17,6 +19,16 @@ export function meta({}: any) {
 }
 
 export default function Home() {
+	const { storeData } = useStoreDataStore();
+	// console.log('=======', storeData);
+
+	useEffect(() => {
+		if (storeData) {
+			document.title = `${storeData?.settings.name} - الرئيسية`;
+		}
+	}, [storeData]);
+	console.log(storeData);
+
 	return (
 		<div className="mb-20 min-h-screen">
 			{/* Top Banner */}
@@ -62,10 +74,14 @@ export default function Home() {
 						<ThemeSwitcher />
 					</div>
 					<div className="flex items-center gap-2">
+						{storeData?.logo ? (
+							<img src={storeData.logo} alt="Logo" className="h-8 w-8" />
+						) : (
+							<Asterisk className="h-6 w-6" />
+						)}{' '}
 						<span className="text-xl font-bold" data-testid="text-logo">
-							نجمة
+							{storeData?.settings.name || 'نجمة'}{' '}
 						</span>
-						<Asterisk className="h-6 w-6" />
 					</div>
 				</div>
 			</header>

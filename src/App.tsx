@@ -14,8 +14,14 @@ import Home from './home';
 
 import Layout from './layouts/Layouts';
 import { ThemeProvider } from './context/theme-provider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useStore } from './hooks/useStoreData';
 
-function App() {
+const queryClient = new QueryClient();
+
+function InnerApp() {
+	useStore();
+
 	return (
 		<BrowserRouter>
 			<ThemeProvider>
@@ -31,6 +37,14 @@ function App() {
 				</Layout>
 			</ThemeProvider>
 		</BrowserRouter>
+	);
+}
+
+function App() {
+	return (
+		<QueryClientProvider client={queryClient}>
+			<InnerApp />
+		</QueryClientProvider>
 	);
 }
 

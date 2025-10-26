@@ -3,6 +3,41 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { products } from '@/shared/mock-data';
 
+interface Pixel {
+	id: string;
+	type: string;
+}
+
+interface SocialLink {
+	link: string;
+	platform: string;
+}
+
+interface Settings {
+	name: string;
+	color: string;
+	pixel: Pixel[];
+	country_id: string;
+	description: string;
+	social_links: SocialLink[];
+}
+
+interface Banner {
+	url: string;
+	description: string;
+}
+
+interface StoreData {
+	id: number;
+	name: string;
+	domain: string;
+	settings: Settings;
+	is_active: boolean;
+	logo: string;
+	favicon: string;
+	banners: Banner[];
+}
+
 export const useCounterStore = create<{
 	count: number;
 	increment: () => void;
@@ -100,6 +135,23 @@ export const useCartStore = create<{
 		}),
 		{
 			name: 'cart-storage',
+		}
+	)
+);
+
+export const useStoreDataStore = create<{
+	storeData: StoreData | null;
+	setStoreData: (data: StoreData) => void;
+	clearStoreData: () => void;
+}>()(
+	persist(
+		(set) => ({
+			storeData: null,
+			setStoreData: (data: StoreData) => set({ storeData: data }),
+			clearStoreData: () => set({ storeData: null }),
+		}),
+		{
+			name: 'store-data-storage',
 		}
 	)
 );
