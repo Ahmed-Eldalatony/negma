@@ -185,63 +185,56 @@ export const useStoreDataStore = create<{
 	error: string | null;
 	setError: (error: string | null) => void;
 	fetchStoreData: () => Promise<void>;
-}>()(
-	persist(
-		(set) => ({
-			storedData: null,
-			setStoredData: (data: StoreData) => set({ storedData: data }),
-			clearStoredData: () => set({ storedData: null }),
-			isLoading: false,
-			setLoading: (isLoading: boolean) => set({ isLoading }),
-			error: null,
-			setError: (error: string | null) => set({ error }),
-			fetchStoreData: async () => {
-				if (typeof window === 'undefined') return; // Prevent server-side execution
+}>()((set) => ({
+	storedData: null,
+	setStoredData: (data: StoreData) => set({ storedData: data }),
+	clearStoredData: () => set({ storedData: null }),
+	isLoading: false,
+	setLoading: (isLoading: boolean) => set({ isLoading }),
+	error: null,
+	setError: (error: string | null) => set({ error }),
+	fetchStoreData: async () => {
+		if (typeof window === 'undefined') return; // Prevent server-side execution
 
-				try {
-					set({ isLoading: true, error: null });
+		try {
+			set({ isLoading: true, error: null });
 
-					// Add timeout to the fetch request
-					const controller = new AbortController();
-					const timeoutId = setTimeout(() => controller.abort(), 10000);
+			// Add timeout to the fetch request
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-					const response = await fetch(`https://boddasaad.me/api/v1/store/${domain}`, {
-						signal: controller.signal,
-					});
+			const response = await fetch(`https://boddasaad.me/api/v1/store/${domain}`, {
+				signal: controller.signal,
+			});
 
-					clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 
-					if (!response.ok) {
-						throw new Error(`API error: ${response.status} ${response.statusText}`);
-					}
+			if (!response.ok) {
+				throw new Error(`API error: ${response.status} ${response.statusText}`);
+			}
 
-					const result = await response.json();
-					// Ensure we're extracting the inner 'data' property
-					const storedData: StoreData = result.data.data;
+			const result = await response.json();
+			// Ensure we're extracting the inner 'data' property
+			const storedData: StoreData = result.data.data;
 
-					set({ storedData, isLoading: false });
-				} catch (error) {
-					if (error instanceof Error && error.name === 'AbortError') {
-						console.error('Store data request timeout:', error);
-						set({
-							error: 'Request timeout',
-							isLoading: false,
-						});
-					} else {
-						console.error('Error fetching store data:', error);
-						set({
-							error: error instanceof Error ? error.message : 'An error occurred',
-							isLoading: false,
-						});
-					}
-				}
-			},
-		}),
-		{
-			name: 'store-data-storage',
+			set({ storedData, isLoading: false });
+		} catch (error) {
+			if (error instanceof Error && error.name === 'AbortError') {
+				console.error('Store data request timeout:', error);
+				set({
+					error: 'Request timeout',
+					isLoading: false,
+				});
+			} else {
+				console.error('Error fetching store data:', error);
+				set({
+					error: error instanceof Error ? error.message : 'An error occurred',
+					isLoading: false,
+				});
+			}
 		}
-	)
-);
+	},
+}));
 
 export const useCategoriesStore = create<{
 	categories: Category[] | null;
@@ -252,65 +245,55 @@ export const useCategoriesStore = create<{
 	error: string | null;
 	setError: (error: string | null) => void;
 	fetchCategories: () => Promise<void>;
-}>()(
-	persist(
-		(set) => ({
-			categories: null,
-			setCategories: (data: Category[]) => set({ categories: data }),
-			clearCategories: () => set({ categories: null }),
-			isLoading: false,
-			setLoading: (isLoading: boolean) => set({ isLoading }),
-			error: null,
-			setError: (error: string | null) => set({ error }),
-			fetchCategories: async () => {
-				if (typeof window === 'undefined') return; // Prevent server-side execution
+}>()((set) => ({
+	categories: null,
+	setCategories: (data: Category[]) => set({ categories: data }),
+	clearCategories: () => set({ categories: null }),
+	isLoading: false,
+	setLoading: (isLoading: boolean) => set({ isLoading }),
+	error: null,
+	setError: (error: string | null) => set({ error }),
+	fetchCategories: async () => {
+		if (typeof window === 'undefined') return; // Prevent server-side execution
 
-				try {
-					set({ isLoading: true, error: null });
+		try {
+			set({ isLoading: true, error: null });
 
-					// Add timeout to the fetch request
-					const controller = new AbortController();
-					const timeoutId = setTimeout(() => controller.abort(), 10000);
+			// Add timeout to the fetch request
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-					const response = await fetch(
-						`https://boddasaad.me/api/v1/store/${domain}/categories`,
-						{
-							signal: controller.signal,
-						}
-					);
+			const response = await fetch(`https://boddasaad.me/api/v1/store/${domain}/categories`, {
+				signal: controller.signal,
+			});
 
-					clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 
-					if (!response.ok) {
-						throw new Error(`API error: ${response.status} ${response.statusText}`);
-					}
+			if (!response.ok) {
+				throw new Error(`API error: ${response.status} ${response.statusText}`);
+			}
 
-					const result = await response.json();
-					const categories: Category[] = result.data;
+			const result = await response.json();
+			const categories: Category[] = result.data;
 
-					set({ categories, isLoading: false });
-				} catch (error) {
-					if (error instanceof Error && error.name === 'AbortError') {
-						console.error('Categories request timeout:', error);
-						set({
-							error: 'Request timeout',
-							isLoading: false,
-						});
-					} else {
-						console.error('Error fetching categories:', error);
-						set({
-							error: error instanceof Error ? error.message : 'An error occurred',
-							isLoading: false,
-						});
-					}
-				}
-			},
-		}),
-		{
-			name: 'categories-storage',
+			set({ categories, isLoading: false });
+		} catch (error) {
+			if (error instanceof Error && error.name === 'AbortError') {
+				console.error('Categories request timeout:', error);
+				set({
+					error: 'Request timeout',
+					isLoading: false,
+				});
+			} else {
+				console.error('Error fetching categories:', error);
+				set({
+					error: error instanceof Error ? error.message : 'An error occurred',
+					isLoading: false,
+				});
+			}
 		}
-	)
-);
+	},
+}));
 
 export const useProductsStore = create<{
 	products: Product[] | null;
@@ -325,108 +308,98 @@ export const useProductsStore = create<{
 	setError: (error: string | null) => void;
 	fetchProducts: () => Promise<void>;
 	fetchProduct: (id: string) => Promise<void>;
-}>()(
-	persist(
-		(set) => ({
-			products: null,
-			setProducts: (data: Product[]) => set({ products: data }),
-			clearProducts: () => set({ products: null }),
-			currentProduct: null,
-			setCurrentProduct: (data: Product) => set({ currentProduct: data }),
-			clearCurrentProduct: () => set({ currentProduct: null }),
-			isLoading: false,
-			setLoading: (isLoading: boolean) => set({ isLoading }),
-			error: null,
-			setError: (error: string | null) => set({ error }),
-			fetchProducts: async () => {
-				if (typeof window === 'undefined') return; // Prevent server-side execution
+}>()((set) => ({
+	products: null,
+	setProducts: (data: Product[]) => set({ products: data }),
+	clearProducts: () => set({ products: null }),
+	currentProduct: null,
+	setCurrentProduct: (data: Product) => set({ currentProduct: data }),
+	clearCurrentProduct: () => set({ currentProduct: null }),
+	isLoading: false,
+	setLoading: (isLoading: boolean) => set({ isLoading }),
+	error: null,
+	setError: (error: string | null) => set({ error }),
+	fetchProducts: async () => {
+		if (typeof window === 'undefined') return; // Prevent server-side execution
 
-				try {
-					set({ isLoading: true, error: null });
+		try {
+			set({ isLoading: true, error: null });
 
-					// Add timeout to the fetch request
-					const controller = new AbortController();
-					const timeoutId = setTimeout(() => controller.abort(), 10000);
+			// Add timeout to the fetch request
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-					const response = await fetch(
-						`https://boddasaad.me/api/v1/store/${domain}/products`,
-						{
-							signal: controller.signal,
-						}
-					);
+			const response = await fetch(`https://boddasaad.me/api/v1/store/${domain}/products`, {
+				signal: controller.signal,
+			});
 
-					clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 
-					if (!response.ok) {
-						throw new Error(`API error: ${response.status} ${response.statusText}`);
-					}
+			if (!response.ok) {
+				throw new Error(`API error: ${response.status} ${response.statusText}`);
+			}
 
-					const result = await response.json();
-					const products: Product[] = result.data;
+			const result = await response.json();
+			const products: Product[] = result.data;
 
-					set({ products, isLoading: false });
-				} catch (error) {
-					if (error instanceof Error && error.name === 'AbortError') {
-						console.error('Products request timeout:', error);
-						set({
-							error: 'Request timeout',
-							isLoading: false,
-						});
-					} else {
-						console.error('Error fetching products:', error);
-						set({
-							error: error instanceof Error ? error.message : 'An error occurred',
-							isLoading: false,
-						});
-					}
-				}
-			},
-			fetchProduct: async (id: string) => {
-				if (typeof window === 'undefined') return; // Prevent server-side execution
-
-				try {
-					set({ isLoading: true, error: null });
-
-					// Add timeout to the fetch request
-					const controller = new AbortController();
-					const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-					const response = await fetch(
-						`https://boddasaad.me/api/v1/store/${domain}/products/${id}`,
-						{
-							signal: controller.signal,
-						}
-					);
-
-					clearTimeout(timeoutId);
-
-					if (!response.ok) {
-						throw new Error(`API error: ${response.status} ${response.statusText}`);
-					}
-
-					const result = await response.json();
-					const product: Product = result.data;
-
-					set({ currentProduct: product, isLoading: false });
-				} catch (error) {
-					if (error instanceof Error && error.name === 'AbortError') {
-						console.error('Product request timeout:', error);
-						set({
-							error: 'Request timeout',
-							isLoading: false,
-						});
-					} else {
-						console.error('Error fetching product:', error);
-						set({
-							error: error instanceof Error ? error.message : 'An error occurred',
-							isLoading: false,
-						});
-					}
-				}
-			},
-		}),
-		{
-			name: 'products-storage',
+			set({ products, isLoading: false });
+		} catch (error) {
+			if (error instanceof Error && error.name === 'AbortError') {
+				console.error('Products request timeout:', error);
+				set({
+					error: 'Request timeout',
+					isLoading: false,
+				});
+			} else {
+				console.error('Error fetching products:', error);
+				set({
+					error: error instanceof Error ? error.message : 'An error occurred',
+					isLoading: false,
+				});
+			}
 		}
-	)
-);
+	},
+	fetchProduct: async (id: string) => {
+		if (typeof window === 'undefined') return; // Prevent server-side execution
+
+		try {
+			set({ isLoading: true, error: null });
+
+			// Add timeout to the fetch request
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+			const response = await fetch(
+				`https://boddasaad.me/api/v1/store/${domain}/products/${id}`,
+				{
+					signal: controller.signal,
+				}
+			);
+
+			clearTimeout(timeoutId);
+
+			if (!response.ok) {
+				throw new Error(`API error: ${response.status} ${response.statusText}`);
+			}
+
+			const result = await response.json();
+			const product: Product = result.data;
+
+			set({ currentProduct: product, isLoading: false });
+		} catch (error) {
+			if (error instanceof Error && error.name === 'AbortError') {
+				console.error('Product request timeout:', error);
+				set({
+					error: 'Request timeout',
+					isLoading: false,
+				});
+			} else {
+				console.error('Error fetching product:', error);
+				set({
+					error: error instanceof Error ? error.message : 'An error occurred',
+					isLoading: false,
+				});
+			}
+		}
+	},
+}));
