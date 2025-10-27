@@ -51,11 +51,16 @@ export default function ProductPage() {
 
 	const { currentProduct, fetchProduct } = useProductsStore();
 
+	// Add state to track if data has been fetched to prevent infinite loops
+	const [hasFetched, setHasFetched] = useState(false);
+
 	useEffect(() => {
-		if (productId) {
-			fetchProduct(productId);
+		if (productId && !currentProduct && !hasFetched) {
+			fetchProduct(productId).then(() => {
+				setHasFetched(true);
+			});
 		}
-	}, [productId, fetchProduct]);
+	}, [productId, currentProduct, fetchProduct, hasFetched]);
 
 	const product = currentProduct
 		? {
@@ -116,7 +121,7 @@ export default function ProductPage() {
 			verified: true,
 			time: 'منذ 3 أيام',
 			rating: 5,
-			comment: 'سهلة الاستخدام وعطور أنيق، منتج رائع بكل تأكيد.',
+			comment: 'عطور أنيق، منتج رائع بكل تأكيد.',
 		},
 		{
 			id: 4,
@@ -440,95 +445,98 @@ export default function ProductPage() {
 						عرض المزيد
 					</Button>
 				</div>
-			</div>
 
-			{/* Fixed Bottom Order Button */}
-			<div className="bg-background fixed right-0 bottom-0 left-0 z-50 border-t p-3">
-				<div className="mx-auto max-w-md space-y-2">
-					<div className="flex gap-2">
+				{/* Fixed Bottom Order Button */}
+				<div className="bg-background fixed right-0 bottom-0 left-0 z-50 border-t p-3">
+					<div className="mx-auto max-w-md space-y-2">
+						<div className="flex gap-2">
+							<Button
+								variant="outline"
+								className="h-11 flex-1 text-sm font-bold"
+								onClick={() => toggleFavorite(product.id)}
+								data-testid="button-favorite-fixed"
+							>
+								<Heart
+									className={`mr-2 h-4 w-4 ${isFavorite(product.id) ? 'fill-red-500 text-red-500' : ''}`}
+								/>
+								{isFavorite(product.id) ? 'مفضل' : 'مفضلة'}
+							</Button>
+							<Button
+								variant="outline"
+								className="h-11 flex-1 text-sm font-bold"
+								onClick={() => {
+									addToCart(product.id);
+									setDialogMode('add');
+									setShowCartDialog(true);
+								}}
+								data-testid="button-cart-fixed"
+							>
+								<ShoppingCart className="mr-2 h-4 w-4" />
+								{isInCart(product.id) ? 'في السلة' : 'سلة'}
+							</Button>
+						</div>
 						<Button
-							variant="outline"
-							className="h-11 flex-1 text-sm font-bold"
-							onClick={() => toggleFavorite(product.id)}
-							data-testid="button-favorite-fixed"
+							className="bg-primary hover:bg-primary/90 h-11 w-full text-sm font-bold"
+							onClick={() => console.log('Order placed')}
+							data-testid="button-order-fixed"
 						>
-							<Heart
-								className={`mr-2 h-4 w-4 ${isFavorite(product.id) ? 'fill-red-500 text-red-500' : ''}`}
-							/>
-							{isFavorite(product.id) ? 'مفضل' : 'مفضلة'}
+							اطلب الآن - الدفع عند الاستلام
 						</Button>
-						<Button
-							variant="outline"
-							className="h-11 flex-1 text-sm font-bold"
-							onClick={() => {
-								addToCart(product.id);
-								setDialogMode('add');
-								setShowCartDialog(true);
-							}}
-							data-testid="button-cart-fixed"
-						>
-							<ShoppingCart className="mr-2 h-4 w-4" />
-							{isInCart(product.id) ? 'في السلة' : 'سلة'}
-						</Button>
-					</div>
-					<Button
-						className="bg-primary hover:bg-primary/90 h-11 w-full text-sm font-bold"
-						onClick={() => console.log('Order placed')}
-						data-testid="button-order-fixed"
-					>
-						اطلب الآن - الدفع عند الاستلام
-					</Button>
 
-					<div className="grid grid-cols-3 gap-2 text-center text-xs">
-						<div className="flex items-center justify-center gap-1">
-							<Check className="text-destructive h-3 w-3" />
-							<span>ضمان 30 يوماً</span>
-						</div>
-						<div className="flex items-center justify-center gap-1">
-							<Truck className="h-3 w-3 text-yellow-600" />
-							<span>شحن مجاني</span>
-						</div>
-						<div className="flex items-center justify-center gap-1">
-							<Shield className="text-destructive h-3 w-3" />
-							<span>الدفع عند الاستلام</span>
+						<div className="grid grid-cols-3 gap-2 text-center text-xs">
+							<div className="flex items-center justify-center gap-1">
+								<Check className="text-destructive h-3 w-3" />
+								<span>ضمان 30 يوماً</span>
+							</div>
+							<div className="flex items-center justify-center gap-1">
+								<Truck className="h-3 w-3 text-yellow-600" />
+								<span>شحن مجاني</span>
+							</div>
+							<div className="flex items-center justify-center gap-1">
+								<Shield className="text-destructive h-3 w-3" />
+								<span>الدفع عند الاستلام</span>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
 
-			<Dialog open={showCartDialog} onOpenChange={setShowCartDialog}>
-				<DialogContent className="sm:max-w-md">
-					<DialogHeader>
-						<DialogTitle>
-							{dialogMode === 'add' ? 'خيارات الشراء' : 'قيد التطوير'}
-						</DialogTitle>
-						<DialogDescription>
-							{dialogMode === 'add'
-								? `تم إضافة ${product.nameAr} إلى السلة. ماذا تريد أن تفعل؟`
-								: 'Working in development'}
-						</DialogDescription>
-					</DialogHeader>
-					{dialogMode === 'add' && (
-						<div className="flex gap-2 pt-4">
-							<Button
-								variant="outline"
-								className="flex-1"
-								onClick={() => setShowCartDialog(false)}
-							>
-								متابعة التسوق
-							</Button>
-							<Button className="flex-1" onClick={() => setDialogMode('development')}>
-								تأكيد الشراء
-							</Button>
-						</div>
-					)}
-					{dialogMode === 'development' && (
-						<div className="flex justify-end pt-4">
-							<Button onClick={() => setShowCartDialog(false)}>إغلاق</Button>
-						</div>
-					)}
-				</DialogContent>
-			</Dialog>
+				<Dialog open={showCartDialog} onOpenChange={setShowCartDialog}>
+					<DialogContent className="sm:max-w-md">
+						<DialogHeader>
+							<DialogTitle>
+								{dialogMode === 'add' ? 'خيارات الشراء' : 'قيد التطوير'}
+							</DialogTitle>
+							<DialogDescription>
+								{dialogMode === 'add'
+									? `تم إضافة ${product.nameAr} إلى السلة. ماذا تريد أن تفعل؟`
+									: 'Working in development'}
+							</DialogDescription>
+						</DialogHeader>
+						{dialogMode === 'add' && (
+							<div className="flex gap-2 pt-4">
+								<Button
+									variant="outline"
+									className="flex-1"
+									onClick={() => setShowCartDialog(false)}
+								>
+									متابعة التسوق
+								</Button>
+								<Button
+									className="flex-1"
+									onClick={() => setDialogMode('development')}
+								>
+									تأكيد الشراء
+								</Button>
+							</div>
+						)}
+						{dialogMode === 'development' && (
+							<div className="flex justify-end pt-4">
+								<Button onClick={() => setShowCartDialog(false)}>إغلاق</Button>
+							</div>
+						)}
+					</DialogContent>
+				</Dialog>
+			</div>
 		</div>
 	);
 }

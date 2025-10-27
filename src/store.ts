@@ -196,10 +196,20 @@ export const useStoreDataStore = create<{
 			error: null,
 			setError: (error: string | null) => set({ error }),
 			fetchStoreData: async () => {
+				if (typeof window === 'undefined') return; // Prevent server-side execution
+
 				try {
 					set({ isLoading: true, error: null });
 
-					const response = await fetch(`https://boddasaad.me/api/v1/store/${domain}`);
+					// Add timeout to the fetch request
+					const controller = new AbortController();
+					const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+					const response = await fetch(`https://boddasaad.me/api/v1/store/${domain}`, {
+						signal: controller.signal
+					});
+
+					clearTimeout(timeoutId);
 
 					if (!response.ok) {
 						throw new Error(`API error: ${response.status} ${response.statusText}`);
@@ -211,11 +221,19 @@ export const useStoreDataStore = create<{
 
 					set({ storedData, isLoading: false });
 				} catch (error) {
-					console.error('Error fetching store data:', error);
-					set({
-						error: error instanceof Error ? error.message : 'An error occurred',
-						isLoading: false,
-					});
+					if (error.name === 'AbortError') {
+						console.error('Store data request timeout:', error);
+						set({
+							error: 'Request timeout',
+							isLoading: false,
+						});
+					} else {
+						console.error('Error fetching store data:', error);
+						set({
+							error: error instanceof Error ? error.message : 'An error occurred',
+							isLoading: false,
+						});
+					}
 				}
 			},
 		}),
@@ -245,12 +263,23 @@ export const useCategoriesStore = create<{
 			error: null,
 			setError: (error: string | null) => set({ error }),
 			fetchCategories: async () => {
+				if (typeof window === 'undefined') return; // Prevent server-side execution
+
 				try {
 					set({ isLoading: true, error: null });
 
+					// Add timeout to the fetch request
+					const controller = new AbortController();
+					const timeoutId = setTimeout(() => controller.abort(), 10000);
+
 					const response = await fetch(
-						`https://boddasaad.me/api/v1/store/${domain}/categories`
+						`https://boddasaad.me/api/v1/store/${domain}/categories`,
+						{
+							signal: controller.signal
+						}
 					);
+
+					clearTimeout(timeoutId);
 
 					if (!response.ok) {
 						throw new Error(`API error: ${response.status} ${response.statusText}`);
@@ -261,11 +290,19 @@ export const useCategoriesStore = create<{
 
 					set({ categories, isLoading: false });
 				} catch (error) {
-					console.error('Error fetching categories:', error);
-					set({
-						error: error instanceof Error ? error.message : 'An error occurred',
-						isLoading: false,
-					});
+					if (error.name === 'AbortError') {
+						console.error('Categories request timeout:', error);
+						set({
+							error: 'Request timeout',
+							isLoading: false,
+						});
+					} else {
+						console.error('Error fetching categories:', error);
+						set({
+							error: error instanceof Error ? error.message : 'An error occurred',
+							isLoading: false,
+						});
+					}
 				}
 			},
 		}),
@@ -302,12 +339,23 @@ export const useProductsStore = create<{
 			error: null,
 			setError: (error: string | null) => set({ error }),
 			fetchProducts: async () => {
+				if (typeof window === 'undefined') return; // Prevent server-side execution
+
 				try {
 					set({ isLoading: true, error: null });
 
+					// Add timeout to the fetch request
+					const controller = new AbortController();
+					const timeoutId = setTimeout(() => controller.abort(), 10000);
+
 					const response = await fetch(
-						`https://boddasaad.me/api/v1/store/${domain}/products`
+						`https://boddasaad.me/api/v1/store/${domain}/products`,
+						{
+							signal: controller.signal
+						}
 					);
+
+					clearTimeout(timeoutId);
 
 					if (!response.ok) {
 						throw new Error(`API error: ${response.status} ${response.statusText}`);
@@ -318,20 +366,39 @@ export const useProductsStore = create<{
 
 					set({ products, isLoading: false });
 				} catch (error) {
-					console.error('Error fetching products:', error);
-					set({
-						error: error instanceof Error ? error.message : 'An error occurred',
-						isLoading: false,
-					});
+					if (error.name === 'AbortError') {
+						console.error('Products request timeout:', error);
+						set({
+							error: 'Request timeout',
+							isLoading: false,
+						});
+					} else {
+						console.error('Error fetching products:', error);
+						set({
+							error: error instanceof Error ? error.message : 'An error occurred',
+							isLoading: false,
+						});
+					}
 				}
 			},
 			fetchProduct: async (id: string) => {
+				if (typeof window === 'undefined') return; // Prevent server-side execution
+
 				try {
 					set({ isLoading: true, error: null });
 
+					// Add timeout to the fetch request
+					const controller = new AbortController();
+					const timeoutId = setTimeout(() => controller.abort(), 10000);
+
 					const response = await fetch(
-						`https://boddasaad.me/api/v1/store/${domain}/products/${id}`
+						`https://boddasaad.me/api/v1/store/${domain}/products/${id}`,
+						{
+							signal: controller.signal
+						}
 					);
+
+					clearTimeout(timeoutId);
 
 					if (!response.ok) {
 						throw new Error(`API error: ${response.status} ${response.statusText}`);
@@ -342,11 +409,19 @@ export const useProductsStore = create<{
 
 					set({ currentProduct: product, isLoading: false });
 				} catch (error) {
-					console.error('Error fetching product:', error);
-					set({
-						error: error instanceof Error ? error.message : 'An error occurred',
-						isLoading: false,
-					});
+					if (error.name === 'AbortError') {
+						console.error('Product request timeout:', error);
+						set({
+							error: 'Request timeout',
+							isLoading: false,
+						});
+					} else {
+						console.error('Error fetching product:', error);
+						set({
+							error: error instanceof Error ? error.message : 'An error occurred',
+							isLoading: false,
+						});
+					}
 				}
 			},
 		}),

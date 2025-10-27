@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Menu, Rocket, Asterisk } from 'lucide-react';
 import { Link } from 'react-router';
 import HeroBanner from '@/components/HeroBanner';
@@ -23,29 +23,44 @@ export default function Home() {
 	const { categories, isLoading: categoriesLoading, fetchCategories } = useCategoriesStore();
 	const { products, isLoading: productsLoading, fetchProducts } = useProductsStore();
 
-	useEffect(() => {
-		if (!storedData && !isLoading) {
-			fetchStoreData();
-		}
-	}, [storedData, isLoading, fetchStoreData]);
+	// Add state to track if data has been fetched to prevent infinite loops
+	const [hasFetched, setHasFetched] = useState({
+		store: false,
+		categories: false,
+		products: false
+	});
 
 	useEffect(() => {
-		if (!categories && !categoriesLoading) {
-			fetchCategories();
+		// Only fetch if not already fetched and not currently loading
+		if (!storedData && !isLoading && !hasFetched.store) {
+			fetchStoreData().then(() => {
+				setHasFetched(prev => ({ ...prev, store: true }));
+			});
 		}
-	}, [categories, categoriesLoading, fetchCategories]);
+	}, [storedData, isLoading, fetchStoreData, hasFetched.store]);
 
 	useEffect(() => {
-		if (!products && !productsLoading) {
-			fetchProducts();
+		if (!categories && !categoriesLoading && !hasFetched.categories) {
+			fetchCategories().then(() => {
+				setHasFetched(prev => ({ ...prev, categories: true }));
+			});
 		}
-	}, [products, productsLoading, fetchProducts]);
+	}, [categories, categoriesLoading, fetchCategories, hasFetched.categories]);
 
 	useEffect(() => {
-		if (storedData) {
-			document.title = `${storedData?.settings.name} - الرئيسية`;
+		if (!products && !productsLoading && !hasFetched.products) {
+			fetchProducts().then(() => {
+				setHasFetched(prev => ({ ...prev, products: true }));
+			});
 		}
-	}, [storedData]);
+	}, [products, productsLoading, fetchProducts, hasFetched.products]);
+
+	// Reset the fetched state when navigating to allow refetching
+	useEffect(() => {
+		return () => {
+			setHasFetched({ store: false, categories: false, products: false });
+		};
+	}, []);
 
 	if (isLoading) {
 		return <div className="flex h-screen items-center justify-center">جاري التحميل...</div>;

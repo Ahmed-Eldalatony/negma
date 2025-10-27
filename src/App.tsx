@@ -17,7 +17,17 @@ import { ThemeProvider } from './context/theme-provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useStore } from './hooks/useStoreData';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000,   // 10 minutes
+      retry: process.env.NODE_ENV === 'production' ? 2 : 1,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnWindowFocus: process.env.NODE_ENV === 'production',
+    },
+  },
+});
 
 function InnerApp() {
 	useStore();
