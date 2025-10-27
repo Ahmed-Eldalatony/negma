@@ -8,8 +8,8 @@ import BottomNav from '@/components/BottomNav';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useStoreDataStore, type StoreData } from './store';
-import { categories, products, type Category, type Product } from '@/shared/mock-data'; // fallback to mock data
+import { useStoreDataStore, useCategoriesStore, useProductsStore } from './store';
+import { categories as mockCategories, products as mockProducts } from '@/shared/mock-data'; // fallback to mock data
 
 export function meta({}: any) {
 	return [
@@ -19,19 +19,33 @@ export function meta({}: any) {
 }
 
 export default function Home() {
-	const { storeData, isLoading, error, fetchStoreData } = useStoreDataStore();
+	const { storedData, isLoading, error, fetchStoreData } = useStoreDataStore();
+	const { categories, isLoading: categoriesLoading, fetchCategories } = useCategoriesStore();
+	const { products, isLoading: productsLoading, fetchProducts } = useProductsStore();
 
 	useEffect(() => {
-		if (!storeData && !isLoading) {
+		if (!storedData && !isLoading) {
 			fetchStoreData();
 		}
-	}, [storeData, isLoading, fetchStoreData]);
+	}, [storedData, isLoading, fetchStoreData]);
 
 	useEffect(() => {
-		if (storeData) {
-			document.title = `${storeData?.settings.name} - الرئيسية`;
+		if (!categories && !categoriesLoading) {
+			fetchCategories();
 		}
-	}, [storeData]);
+	}, [categories, categoriesLoading, fetchCategories]);
+
+	useEffect(() => {
+		if (!products && !productsLoading) {
+			fetchProducts();
+		}
+	}, [products, productsLoading, fetchProducts]);
+
+	useEffect(() => {
+		if (storedData) {
+			document.title = `${storedData?.settings.name} - الرئيسية`;
+		}
+	}, [storedData]);
 
 	if (isLoading) {
 		return <div className="flex h-screen items-center justify-center">جاري التحميل...</div>;
@@ -42,8 +56,6 @@ export default function Home() {
 		// Fallback to mock data if there's an error
 		console.log('Using mock data due to error');
 	}
-
-	console.log(storeData.data);
 
 	return (
 		<div className="mb-20 min-h-screen">
@@ -90,13 +102,13 @@ export default function Home() {
 						<ThemeSwitcher />
 					</div>
 					<div className="flex items-center gap-2">
-						{storeData?.logo ? (
-							<img src={storeData.logo} alt="Logo" className="h-8 w-8" />
+						{storedData?.logo ? (
+							<img src={storedData.logo} alt="Logo" className="h-8 w-8" />
 						) : (
 							<Asterisk className="h-6 w-6" />
 						)}
 						<span className="text-xl font-bold" data-testid="text-logo">
-							{storeData?.settings.name || 'نجمة'}
+							{storedData?.settings.name || 'نجمة'}
 						</span>
 					</div>
 				</div>
@@ -110,28 +122,16 @@ export default function Home() {
 						التصنيفات
 					</h2>
 					<div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
-						{storeData && storeData.banners && storeData.banners.length > 0
-							? storeData.banners
-									.map((banner, index) => ({
-										id: `banner-${index}`,
-										name: banner.description,
-										nameAr: banner.description,
-										image: banner.url,
-									}))
-									.map((category: Category) => (
-										<CategoryCard
-											className={'min-w-28'}
-											key={category.id}
-											category={category}
-										/>
-									))
-							: categories.map((category) => (
-									<CategoryCard
-										className={'min-w-28'}
-										key={category.id}
-										category={category}
-									/>
-								))}
+						{(categories
+							? categories.map((cat) => ({ ...cat, id: cat.id.toString() }))
+							: mockCategories
+						).map((category) => (
+							<CategoryCard
+								className={'min-w-28'}
+								key={category.id}
+								category={category}
+							/>
+						))}
 					</div>
 				</section>
 
@@ -140,26 +140,30 @@ export default function Home() {
 						المنتجات
 					</h2>
 					<div className="grid grid-cols-2 gap-3">
-						{storeData && storeData.banners && storeData.banners.length > 0
-							? storeData.banners
-									.slice(0, 4)
-									.map((banner, index) => ({
-										id: `banner-product-${index}`,
-										name: banner.description,
-										nameAr: banner.description,
-										image: banner.url,
-										price: 0,
-										originalPrice: 0,
-										category: '',
-										categoryAr: '',
-										inStock: true,
-									}))
-									.map((product: Product) => (
-										<ProductCard key={product.id} product={product} />
-									))
-							: products.map((product) => (
-									<ProductCard key={product.id} product={product} />
-								))}
+						{(products
+							? products.slice(0, 4).map((p) => ({
+									id: p.id.toString(),
+									name: p.name,
+									nameAr: p.name,
+									image: p.media[0]?.url || '',
+									price: parseFloat(p.prices[0]?.price_in_usd || '0'),
+									originalPrice: undefined,
+									discount: undefined,
+									category: '',
+									categoryAr: '',
+									inStock: p.inventory > 0,
+									stockCount: p.inventory,
+									rating: undefined,
+									reviewCount: undefined,
+									description: p.description,
+									descriptionAr: p.description,
+									colors: undefined,
+									offers: undefined,
+								}))
+							: mockProducts.slice(0, 4)
+						).map((product) => (
+							<ProductCard key={product.id} product={product} />
+						))}
 					</div>
 				</section>
 			</div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router';
 import {
 	Star,
@@ -34,11 +34,11 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from '@/components/ui/accordion';
-import { products } from '@/shared/mock-data';
-import { useFavoritesStore, useCartStore } from '@/store';
+import { products as mockProducts } from '@/shared/mock-data';
+import { useFavoritesStore, useCartStore, useProductsStore } from '@/store';
 // TODO: get the right type instead of any
 export function meta({ params }: any) {
-	const product = products.find((p) => p.id === params.id);
+	const product = mockProducts.find((p) => p.id === params.id);
 	return [
 		{ title: `${product?.nameAr || 'منتج'} - نجمة` },
 		{ name: 'description', content: product?.descriptionAr || 'تفاصيل المنتج' },
@@ -49,7 +49,35 @@ export default function ProductPage() {
 	const params = useParams();
 	const productId = params.id || '1';
 
-	const product = products.find((p) => p.id === productId) || products[0];
+	const { currentProduct, fetchProduct } = useProductsStore();
+
+	useEffect(() => {
+		if (productId) {
+			fetchProduct(productId);
+		}
+	}, [productId, fetchProduct]);
+
+	const product = currentProduct
+		? {
+				id: currentProduct.id.toString(),
+				name: currentProduct.name,
+				nameAr: currentProduct.name,
+				image: currentProduct.media[0]?.url || '',
+				price: parseFloat(currentProduct.prices[0]?.price_in_usd || '0'),
+				originalPrice: undefined,
+				discount: undefined,
+				category: '',
+				categoryAr: '',
+				inStock: currentProduct.inventory > 0,
+				stockCount: currentProduct.inventory,
+				rating: undefined,
+				reviewCount: undefined,
+				description: currentProduct.description,
+				descriptionAr: currentProduct.description,
+				colors: undefined,
+				offers: undefined,
+			}
+		: mockProducts.find((p) => p.id === productId) || mockProducts[0];
 	const [selectedOffer, setSelectedOffer] = useState(product.offers?.[0]?.id || '');
 	const [selectedColor, setSelectedColor] = useState(product.colors?.[3] || '');
 	// const [quantity, setQuantity] = useState(1);

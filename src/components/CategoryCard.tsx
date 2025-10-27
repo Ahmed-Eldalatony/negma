@@ -8,13 +8,14 @@ interface CategoryCardProps {
 }
 
 export default function CategoryCard({ category, className }: CategoryCardProps) {
+	console.log('=======', category);
 	return (
 		<Link className={cn(className)} to={`/category/${category.id}`}>
 			<div className="w-full flex-shrink-0" data-testid={`card-category-${category.id}`}>
 				<div className="bg-muted mb-2 aspect-square overflow-hidden rounded-md">
 					<img
 						src={category.image}
-						alt={category.nameAr}
+						alt={category.name}
 						className="h-full w-full object-cover"
 						data-testid={`img-category-${category.id}`}
 					/>
@@ -23,7 +24,7 @@ export default function CategoryCard({ category, className }: CategoryCardProps)
 					className="text-center text-xs leading-tight font-medium"
 					data-testid={`text-category-name-${category.id}`}
 				>
-					{category.nameAr}
+					{category.name}
 				</p>
 			</div>
 		</Link>

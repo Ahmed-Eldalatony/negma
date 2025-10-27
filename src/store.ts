@@ -3,6 +3,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { products } from '@/shared/mock-data';
 
+const domain = 'hwm.negma.vercel.app';
+
 interface Pixel {
 	id: string;
 	type: string;
@@ -25,6 +27,41 @@ interface Settings {
 interface Banner {
 	url: string;
 	description: string;
+}
+
+interface Category {
+	id: number;
+	name: string;
+	name_en: string;
+	description: string;
+	description_en: string;
+	image: string;
+	is_active: boolean;
+	sort_order: number;
+	created_at: string;
+	updated_at: string;
+}
+
+interface Product {
+	id: number;
+	name: string;
+	description: string;
+	inventory: number;
+	prices: { id: number; min_quantity: number; price_in_usd: string }[];
+	media: {
+		id: number;
+		file_name: string;
+		size: string;
+		human_readable_size: string;
+		url: string;
+		type: string;
+	}[];
+	variants: {
+		id: number;
+		sku: string;
+		options: { value: string; attribute: string }[];
+		inventory: number;
+	}[];
 }
 
 export interface StoreData {
@@ -140,9 +177,9 @@ export const useCartStore = create<{
 );
 
 export const useStoreDataStore = create<{
-	storeData: StoreData | null;
-	setStoreData: (data: StoreData) => void;
-	clearStoreData: () => void;
+	storedData: StoreData | null;
+	setStoredData: (data: StoreData) => void;
+	clearStoredData: () => void;
 	isLoading: boolean;
 	setLoading: (isLoading: boolean) => void;
 	error: string | null;
@@ -151,9 +188,9 @@ export const useStoreDataStore = create<{
 }>()(
 	persist(
 		(set) => ({
-			storeData: null,
-			setStoreData: (data: StoreData) => set({ storeData: data }),
-			clearStoreData: () => set({ storeData: null }),
+			storedData: null,
+			setStoredData: (data: StoreData) => set({ storedData: data }),
+			clearStoredData: () => set({ storedData: null }),
 			isLoading: false,
 			setLoading: (isLoading: boolean) => set({ isLoading }),
 			error: null,
@@ -161,25 +198,160 @@ export const useStoreDataStore = create<{
 			fetchStoreData: async () => {
 				try {
 					set({ isLoading: true, error: null });
-					
-					const response = await fetch('https://boddasaad.me/api/v1/store/hwm.negma.vercel.app');
-					
+
+					const response = await fetch(`https://boddasaad.me/api/v1/store/${domain}`);
+
 					if (!response.ok) {
 						throw new Error(`API error: ${response.status} ${response.statusText}`);
 					}
-					
+
 					const result = await response.json();
-					const storeData: StoreData = result.data;
-					
-					set({ storeData, isLoading: false });
+					// Ensure we're extracting the inner 'data' property
+					const storedData: StoreData = result.data.data;
+
+					set({ storedData, isLoading: false });
 				} catch (error) {
 					console.error('Error fetching store data:', error);
-					set({ error: error instanceof Error ? error.message : 'An error occurred', isLoading: false });
+					set({
+						error: error instanceof Error ? error.message : 'An error occurred',
+						isLoading: false,
+					});
 				}
 			},
 		}),
 		{
 			name: 'store-data-storage',
+		}
+	)
+);
+
+export const useCategoriesStore = create<{
+	categories: Category[] | null;
+	setCategories: (data: Category[]) => void;
+	clearCategories: () => void;
+	isLoading: boolean;
+	setLoading: (isLoading: boolean) => void;
+	error: string | null;
+	setError: (error: string | null) => void;
+	fetchCategories: () => Promise<void>;
+}>()(
+	persist(
+		(set) => ({
+			categories: null,
+			setCategories: (data: Category[]) => set({ categories: data }),
+			clearCategories: () => set({ categories: null }),
+			isLoading: false,
+			setLoading: (isLoading: boolean) => set({ isLoading }),
+			error: null,
+			setError: (error: string | null) => set({ error }),
+			fetchCategories: async () => {
+				try {
+					set({ isLoading: true, error: null });
+
+					const response = await fetch(
+						`https://boddasaad.me/api/v1/store/${domain}/categories`
+					);
+
+					if (!response.ok) {
+						throw new Error(`API error: ${response.status} ${response.statusText}`);
+					}
+
+					const result = await response.json();
+					const categories: Category[] = result.data;
+
+					set({ categories, isLoading: false });
+				} catch (error) {
+					console.error('Error fetching categories:', error);
+					set({
+						error: error instanceof Error ? error.message : 'An error occurred',
+						isLoading: false,
+					});
+				}
+			},
+		}),
+		{
+			name: 'categories-storage',
+		}
+	)
+);
+
+export const useProductsStore = create<{
+	products: Product[] | null;
+	setProducts: (data: Product[]) => void;
+	clearProducts: () => void;
+	currentProduct: Product | null;
+	setCurrentProduct: (data: Product) => void;
+	clearCurrentProduct: () => void;
+	isLoading: boolean;
+	setLoading: (isLoading: boolean) => void;
+	error: string | null;
+	setError: (error: string | null) => void;
+	fetchProducts: () => Promise<void>;
+	fetchProduct: (id: string) => Promise<void>;
+}>()(
+	persist(
+		(set) => ({
+			products: null,
+			setProducts: (data: Product[]) => set({ products: data }),
+			clearProducts: () => set({ products: null }),
+			currentProduct: null,
+			setCurrentProduct: (data: Product) => set({ currentProduct: data }),
+			clearCurrentProduct: () => set({ currentProduct: null }),
+			isLoading: false,
+			setLoading: (isLoading: boolean) => set({ isLoading }),
+			error: null,
+			setError: (error: string | null) => set({ error }),
+			fetchProducts: async () => {
+				try {
+					set({ isLoading: true, error: null });
+
+					const response = await fetch(
+						`https://boddasaad.me/api/v1/store/${domain}/products`
+					);
+
+					if (!response.ok) {
+						throw new Error(`API error: ${response.status} ${response.statusText}`);
+					}
+
+					const result = await response.json();
+					const products: Product[] = result.data;
+
+					set({ products, isLoading: false });
+				} catch (error) {
+					console.error('Error fetching products:', error);
+					set({
+						error: error instanceof Error ? error.message : 'An error occurred',
+						isLoading: false,
+					});
+				}
+			},
+			fetchProduct: async (id: string) => {
+				try {
+					set({ isLoading: true, error: null });
+
+					const response = await fetch(
+						`https://boddasaad.me/api/v1/store/${domain}/products/${id}`
+					);
+
+					if (!response.ok) {
+						throw new Error(`API error: ${response.status} ${response.statusText}`);
+					}
+
+					const result = await response.json();
+					const product: Product = result.data;
+
+					set({ currentProduct: product, isLoading: false });
+				} catch (error) {
+					console.error('Error fetching product:', error);
+					set({
+						error: error instanceof Error ? error.message : 'An error occurred',
+						isLoading: false,
+					});
+				}
+			},
+		}),
+		{
+			name: 'products-storage',
 		}
 	)
 );

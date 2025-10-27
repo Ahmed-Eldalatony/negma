@@ -48,8 +48,7 @@ export const useStore = () => {
 				setLoading(true);
 				setError(null);
 				const res = await api.get('v1/store/hwm.negma.vercel.app');
-				console.log('Store data response:', res);
-				setData(res.data);
+				setData(res.data.data);
 			} catch (err) {
 				console.error('API error:', err);
 				setError(err instanceof Error ? err.message : 'An error occurred');
@@ -61,5 +60,5 @@ export const useStore = () => {
 	}, []);
 
 	console.log('Store data:', data);
-	return { data, loading, error };
+	return { storedData: data, loading, error };
 };

@@ -8,8 +8,8 @@ import { categories, products } from '@/shared/mock-data';
 export function meta({ params }: any) {
 	const category = categories.find((c) => c.id === params.id);
 	return [
-		{ title: `${category?.nameAr || 'تصنيف'} - نجمة` },
-		{ name: 'description', content: `تصفح منتجات ${category?.nameAr || 'التصنيف'}` },
+		{ title: `${category?.name || 'تصنيف'} - نجمة` },
+		{ name: 'description', content: `تصفح منتجات ${category?.name || 'التصنيف'}` },
 	];
 }
 
@@ -33,7 +33,7 @@ export default function CategoryPage() {
 						className="flex-1 text-center text-lg font-bold"
 						data-testid="text-category-title"
 					>
-						{category?.nameAr || 'فواكه وخضروات'}
+						{category?.name || 'فواكه وخضروات'}
 					</h1>
 				</div>
 			</header>

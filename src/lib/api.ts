@@ -6,13 +6,12 @@ export const api = {
 			const response = await fetch(`${BASE_URL}${endpoint}`);
 			console.log('URL', BASE_URL + endpoint);
 			console.log('Response status:', response.status);
-			
+
 			if (!response.ok) {
 				throw new Error(`API error: ${response.status} ${response.statusText}`);
 			}
-			
+
 			const data = await response.json();
-			console.log('API response data:', data);
 			return { data };
 		} catch (error) {
 			console.error('API error:', error);
