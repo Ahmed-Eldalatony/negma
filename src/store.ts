@@ -1,7 +1,6 @@
 // src/store.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { products } from '@/shared/mock-data';
 
 const domain = 'hwm.negma.vercel.app';
 
@@ -114,7 +113,6 @@ export const useCartStore = create<{
 	clearCart: () => void;
 	getCartItemCount: () => number;
 	isInCart: (productId: string) => boolean;
-	getCartTotal: () => number;
 }>()(
 	persist(
 		(set, get) => ({
@@ -125,9 +123,7 @@ export const useCartStore = create<{
 					if (existingItem) {
 						return {
 							cart: state.cart.map((item) =>
-								item.id === productId
-									? { ...item, quantity: item.quantity + quantity }
-									: item
+								item.id === productId ? { ...item, quantity: item.quantity + quantity } : item
 							),
 						};
 					} else {
@@ -142,20 +138,11 @@ export const useCartStore = create<{
 				})),
 			updateQuantity: (productId: string, quantity: number) =>
 				set((state) => ({
-					cart: state.cart.map((item) =>
-						item.id === productId ? { ...item, quantity } : item
-					),
+					cart: state.cart.map((item) => (item.id === productId ? { ...item, quantity } : item)),
 				})),
 			clearCart: () => set({ cart: [] }),
 			getCartItemCount: () => get().cart.reduce((total, item) => total + item.quantity, 0),
 			isInCart: (productId: string) => get().cart.some((item) => item.id === productId),
-			getCartTotal: () => {
-				const cart = get().cart;
-				return cart.reduce((total, item) => {
-					const product = products.find((p) => p.id === item.id);
-					return total + (product ? product.price * item.quantity : 0);
-				}, 0);
-			},
 		}),
 		{
 			name: 'cart-storage',
@@ -237,12 +224,9 @@ export const useProductsStore = create<{
 			const controller = new AbortController();
 			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-			const response = await fetch(
-				`https://boddasaad.me/api/v1/store/${domain}/products/${id}`,
-				{
-					signal: controller.signal,
-				}
-			);
+			const response = await fetch(`https://boddasaad.me/api/v1/store/${domain}/products/${id}`, {
+				signal: controller.signal,
+			});
 
 			clearTimeout(timeoutId);
 

@@ -1,21 +1,49 @@
 import { Minus, Plus, Trash2, ArrowRight, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router';
-import { useCartStore } from '@/store';
-import { products, Product } from '@/shared/mock-data';
+import { useCartStore, useProductsStore } from '@/store';
 import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 
 export default function CartPage() {
-	const { cart, updateQuantity, removeFromCart, getCartTotal } = useCartStore();
+	const { cart, updateQuantity, removeFromCart } = useCartStore();
+	const { products, isLoading } = useProductsStore();
 
-	const cartItems: (Product & { quantity: number })[] = cart
+	const cartItems = cart
 		.map((item) => {
-			const product = products.find((p) => p.id === item.id);
-			return product ? { ...product, quantity: item.quantity } : null;
+			const product = products?.find((p) => p.id.toString() === item.id);
+			if (!product) return null;
+			return {
+				id: item.id,
+				quantity: item.quantity,
+				name: product.name,
+				image: product.media[0]?.url || '',
+				price: parseFloat(product.prices[0]?.price_in_usd || '0'),
+			};
 		})
-		.filter((item): item is Product & { quantity: number } => item !== null);
+		.filter((item) => item !== null);
 
-	const total = getCartTotal();
+	const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+	if (isLoading) {
+		return (
+			<div className="min-h-screen pb-20">
+				<header className="bg-background sticky top-0 z-40 border-b p-4">
+					<div className="flex items-center justify-between">
+						<Link to="/">
+							<Button variant="ghost" size="icon" data-testid="button-back">
+								<ArrowRight className="h-5 w-5" />
+							</Button>
+						</Link>
+						<h1 className="flex-1 text-center text-lg font-bold" data-testid="text-cart-title">
+							السلة
+						</h1>
+						<div className="w-10" />
+					</div>
+				</header>
+				<div className="flex h-screen items-center justify-center">جاري التحميل...</div>
+			</div>
+		);
+	}
 
 	if (cartItems.length === 0) {
 		return (
@@ -27,10 +55,7 @@ export default function CartPage() {
 								<ArrowRight className="h-5 w-5" />
 							</Button>
 						</Link>
-						<h1
-							className="flex-1 text-center text-lg font-bold"
-							data-testid="text-cart-title"
-						>
+						<h1 className="flex-1 text-center text-lg font-bold" data-testid="text-cart-title">
 							السلة
 						</h1>
 						<div className="w-10" />
@@ -42,9 +67,7 @@ export default function CartPage() {
 						<ShoppingCart className="text-muted-foreground h-8 w-8" />
 					</div>
 					<h2 className="mb-2 text-xl font-semibold">السلة فارغة</h2>
-					<p className="text-muted-foreground mb-6">
-						لم تقم بإضافة أي منتجات إلى السلة بعد
-					</p>
+					<p className="text-muted-foreground mb-6">لم تقم بإضافة أي منتجات إلى السلة بعد</p>
 					<Link to="/">
 						<Button data-testid="button-shop">ابدأ التسوق</Button>
 					</Link>
@@ -64,10 +87,7 @@ export default function CartPage() {
 							<ArrowRight className="h-5 w-5" />
 						</Button>
 					</Link>
-					<h1
-						className="flex-1 text-center text-lg font-bold"
-						data-testid="text-cart-title"
-					>
+					<h1 className="flex-1 text-center text-lg font-bold" data-testid="text-cart-title">
 						السلة ({cartItems.length})
 					</h1>
 					<div className="w-10" />
@@ -78,13 +98,9 @@ export default function CartPage() {
 				{cartItems.map((item) => (
 					<div key={item.id} className="bg-muted rounded-lg p-4">
 						<div className="flex gap-4">
-							<img
-								src={item.image}
-								alt={item.nameAr}
-								className="h-20 w-20 rounded-md object-cover"
-							/>
+							<img src={item.image} alt={item.name} className="h-20 w-20 rounded-md object-cover" />
 							<div className="flex-1">
-								<h3 className="mb-1 text-sm font-medium">{item.nameAr}</h3>
+								<h3 className="mb-1 text-sm font-medium">{item.name}</h3>
 								<p className="text-primary font-bold">{item.price} ريال</p>
 								<div className="mt-2 flex items-center justify-between">
 									<div className="flex items-center gap-2">
@@ -92,9 +108,7 @@ export default function CartPage() {
 											variant="outline"
 											size="icon"
 											className="h-8 w-8"
-											onClick={() =>
-												updateQuantity(item.id, item.quantity - 1)
-											}
+											onClick={() => updateQuantity(item.id, item.quantity - 1)}
 											disabled={item.quantity <= 1}
 										>
 											<Minus className="h-4 w-4" />
@@ -104,9 +118,7 @@ export default function CartPage() {
 											variant="outline"
 											size="icon"
 											className="h-8 w-8"
-											onClick={() =>
-												updateQuantity(item.id, item.quantity + 1)
-											}
+											onClick={() => updateQuantity(item.id, item.quantity + 1)}
 										>
 											<Plus className="h-4 w-4" />
 										</Button>
@@ -128,13 +140,9 @@ export default function CartPage() {
 				<div className="bg-muted rounded-lg p-4">
 					<div className="mb-2 flex items-center justify-between">
 						<span className="font-medium">المجموع الكلي:</span>
-						<span className="text-primary text-lg font-bold">
-							{total.toFixed(2)} ريال
-						</span>
+						<span className="text-primary text-lg font-bold">{total.toFixed(2)} ريال</span>
 					</div>
-					<div className="text-muted-foreground text-xs">
-						الشحن مجاني على الطلبات فوق 50 ريال
-					</div>
+					<div className="text-muted-foreground text-xs">الشحن مجاني على الطلبات فوق 50 ريال</div>
 				</div>
 
 				<div className="space-y-2">

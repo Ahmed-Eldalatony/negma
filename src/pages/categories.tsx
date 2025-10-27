@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import CategoryCard from '@/components/CategoryCard';
+import CategoryCardSkeleton from '@/components/CategoryCardSkeleton';
 import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
@@ -17,10 +18,7 @@ export default function CategoriesPage() {
 							<ArrowRight className="h-5 w-5" />
 						</Button>
 					</Link>
-					<h1
-						className="flex-1 text-center text-lg font-bold"
-						data-testid="text-categories-title"
-					>
+					<h1 className="flex-1 text-center text-lg font-bold" data-testid="text-categories-title">
 						التصنيفات
 					</h1>
 					<div className="w-10" />
@@ -29,7 +27,11 @@ export default function CategoriesPage() {
 
 			<div className="p-4">
 				{loading ? (
-					<div className="py-4 text-center">Loading categories...</div>
+					<div className="grid grid-cols-2 gap-4">
+						{Array.from({ length: 6 }).map((_, i) => (
+							<CategoryCardSkeleton key={i} />
+						))}
+					</div>
 				) : error ? (
 					<div className="py-4 text-center text-red-500">Error loading categories</div>
 				) : Array.isArray(categories) ? (

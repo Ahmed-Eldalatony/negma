@@ -34,33 +34,24 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from '@/components/ui/accordion';
-import { products as mockProducts } from '@/shared/mock-data';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useFavoritesStore, useCartStore, useProductsStore } from '@/store';
 // TODO: get the right type instead of any
-export function meta({ params }: { params: { id?: string } }) {
-	const product = mockProducts.find((p) => p.id === params.id);
-	return [
-		{ title: `${product?.nameAr || 'منتج'} - نجمة` },
-		{ name: 'description', content: product?.descriptionAr || 'تفاصيل المنتج' },
-	];
+export function meta() {
+	return [{ title: 'منتج - نجمة' }, { name: 'description', content: 'تفاصيل المنتج' }];
 }
 
 export default function ProductPage() {
 	const params = useParams();
 	const productId = params.id || '1';
 
-	const { currentProduct, fetchProduct } = useProductsStore();
-
-	// Add state to track if data has been fetched to prevent infinite loops
-	const [hasFetched, setHasFetched] = useState(false);
+	const { currentProduct, fetchProduct, isLoading } = useProductsStore();
 
 	useEffect(() => {
-		if (productId && !currentProduct && !hasFetched) {
-			fetchProduct(productId).then(() => {
-				setHasFetched(true);
-			});
+		if (productId) {
+			fetchProduct(productId);
 		}
-	}, [productId, currentProduct, fetchProduct, hasFetched]);
+	}, [productId, fetchProduct]);
 
 	const product = currentProduct
 		? {
@@ -69,22 +60,33 @@ export default function ProductPage() {
 				nameAr: currentProduct.name,
 				image: currentProduct.media[0]?.url || '',
 				price: parseFloat(currentProduct.prices[0]?.price_in_usd || '0'),
-				originalPrice: undefined,
-				discount: undefined,
+				originalPrice: undefined as number | undefined,
+				discount: undefined as number | undefined,
 				category: '',
 				categoryAr: '',
 				inStock: currentProduct.inventory > 0,
 				stockCount: currentProduct.inventory,
-				rating: undefined,
-				reviewCount: undefined,
+				rating: undefined as number | undefined,
+				reviewCount: undefined as number | undefined,
 				description: currentProduct.description,
 				descriptionAr: currentProduct.description,
-				colors: undefined,
-				offers: undefined,
+				colors: undefined as string[] | undefined,
+				offers: undefined as
+					| {
+							id: string;
+							title: string;
+							titleAr: string;
+							discount: number;
+							originalPrice: number;
+							newPrice: number;
+							isLimited?: boolean;
+							limitedCount?: number;
+					  }[]
+					| undefined,
 			}
-		: mockProducts.find((p) => p.id === productId) || mockProducts[0];
-	const [selectedOffer, setSelectedOffer] = useState(product.offers?.[0]?.id || '');
-	const [selectedColor, setSelectedColor] = useState(product.colors?.[3] || '');
+		: null;
+	const [selectedOffer, setSelectedOffer] = useState('');
+	const [selectedColor, setSelectedColor] = useState('');
 	// const [quantity, setQuantity] = useState(1);
 
 	// const increaseQuantity = () => setQuantity(prev => prev + 1);
@@ -95,7 +97,29 @@ export default function ProductPage() {
 	const [showCartDialog, setShowCartDialog] = useState(false);
 	const [dialogMode, setDialogMode] = useState<'add' | 'development'>('add');
 
-	const productImages = [product.image, product.image, product.image];
+	if (isLoading || !product) {
+		return (
+			<div className="bg-background min-h-screen">
+				<div className="space-y-3 p-4">
+					<div className="relative">
+						<Skeleton className="aspect-square w-full" />
+					</div>
+					<Skeleton className="h-6 w-3/4" />
+					<Skeleton className="h-6 w-1/2" />
+					<div className="grid grid-cols-4 gap-2">
+						{Array.from({ length: 4 }).map((_, i) => (
+							<Skeleton key={i} className="aspect-square w-full" />
+						))}
+					</div>
+					<Skeleton className="h-12 w-full" />
+				</div>
+			</div>
+		);
+	}
+
+	// At this point, product is guaranteed to be not null
+	const safeProduct = product!;
+	const productImages = [safeProduct.image, safeProduct.image, safeProduct.image];
 
 	// TODO: remove mock functionality
 	const reviews = [
@@ -137,47 +161,42 @@ export default function ProductPage() {
 		<div className="bg-background min-h-screen">
 			<div className="space-y-3 p-4">
 				<div className="relative">
-					{product.rating && (
+					{safeProduct.rating && (
 						<Badge
 							className="bg-primary text-primary-foreground absolute top-3 right-3 z-10 flex items-center gap-1 text-sm font-bold"
 							data-testid="badge-rating"
 						>
 							<Star className="h-3 w-3 fill-current" />
-							{product.rating}
+							{safeProduct.rating}
 						</Badge>
 					)}
-					{product.discount && (
+					{safeProduct.discount && (
 						<Badge
 							variant="destructive"
 							className="absolute top-3 left-3 z-10 text-sm font-bold"
 							data-testid="badge-discount-main"
 						>
-							خصم {product.discount}%
+							خصم {safeProduct.discount}%
 						</Badge>
 					)}
-					<ProductImageGallery images={productImages} productName={product.nameAr} />
+					<ProductImageGallery images={productImages} productName={safeProduct.nameAr} />
 				</div>
 
 				<div className="bg-muted rounded-md p-3">
 					<div className="flex items-end justify-between">
 						<div className="flex-1">
 							<div className="text-muted-foreground mb-1 text-xs">
-								{product.originalPrice && (
-									<span className="line-through">
-										{product.originalPrice.toFixed(0)} ريال
-									</span>
+								{safeProduct.originalPrice && (
+									<span className="line-through">{safeProduct.originalPrice.toFixed(0)} ريال</span>
 								)}
 							</div>
-							<span
-								className="block text-2xl font-bold"
-								data-testid="text-main-price"
-							>
-								{product.price} ريال
+							<span className="block text-2xl font-bold" data-testid="text-main-price">
+								{safeProduct.price} ريال
 							</span>
-							{product.originalPrice && (
+							{safeProduct.originalPrice && (
 								<div className="text-muted-foreground mt-1 text-xs">
-									وفر {product.originalPrice - product.price} ريال (خصم{' '}
-									{product.discount}%)
+									وفر {safeProduct.originalPrice - safeProduct.price} ريال (خصم{' '}
+									{safeProduct.discount}%)
 								</div>
 							)}
 						</div>
@@ -241,9 +260,9 @@ export default function ProductPage() {
 					<CountdownTimer />
 				</div>
 
-				{product.colors && (
+				{safeProduct.colors && (
 					<ColorSelector
-						colors={product.colors}
+						colors={safeProduct.colors}
 						selectedColor={selectedColor}
 						onColorSelect={setSelectedColor}
 					/>
@@ -251,9 +270,7 @@ export default function ProductPage() {
 
 				<div className="bg-muted flex items-center gap-2 rounded-md p-3">
 					<MessageCircle className="h-4 w-4" />
-					<span className="text-sm font-medium">
-						لإجراء طلب، يرجى إدخال معلوماتك هنا:
-					</span>
+					<span className="text-sm font-medium">لإجراء طلب، يرجى إدخال معلوماتك هنا:</span>
 				</div>
 
 				<div className="space-y-2">
@@ -286,9 +303,9 @@ export default function ProductPage() {
 					</div>
 				</div>
 
-				{product.offers && product.offers.length > 0 && (
+				{safeProduct.offers && safeProduct.offers.length > 0 && (
 					<div className="space-y-2">
-						{product.offers.map((offer) => (
+						{safeProduct.offers.map((offer) => (
 							<OfferCard
 								key={offer.id}
 								offer={offer}
@@ -299,13 +316,13 @@ export default function ProductPage() {
 					</div>
 				)}
 
-				{product.descriptionAr && (
+				{safeProduct.descriptionAr && (
 					<div className="space-y-2">
 						<p
 							className="text-muted-foreground text-sm leading-relaxed"
 							data-testid="text-description"
 						>
-							{product.descriptionAr}
+							{safeProduct.descriptionAr}
 						</p>
 					</div>
 				)}
@@ -364,16 +381,12 @@ export default function ProductPage() {
 					<div className="bg-background rounded-md p-3 text-center">
 						<Zap className="mx-auto mb-2 h-6 w-6" />
 						<div className="text-sm font-medium">شحن مجاني</div>
-						<div className="text-muted-foreground text-xs">
-							عند الشراء بأكثر من 99 دولار
-						</div>
+						<div className="text-muted-foreground text-xs">عند الشراء بأكثر من 99 دولار</div>
 					</div>
 					<div className="bg-background rounded-md p-3 text-center">
 						<Shield className="mx-auto mb-2 h-6 w-6" />
 						<div className="text-sm font-medium">إرجاع سهل</div>
-						<div className="text-muted-foreground text-xs">
-							تم تحديد سياسة الإرجاع إلى 60 يوماً
-						</div>
+						<div className="text-muted-foreground text-xs">تم تحديد سياسة الإرجاع إلى 60 يوماً</div>
 					</div>
 					<div className="bg-background rounded-md p-3 text-center">
 						<Check className="mx-auto mb-2 h-6 w-6" />
@@ -411,14 +424,10 @@ export default function ProductPage() {
 									<div>
 										<div className="flex items-center gap-2">
 											<span className="font-medium">{review.name}</span>
-											{review.verified && (
-												<Check className="h-4 w-4 text-green-600" />
-											)}
+											{review.verified && <Check className="h-4 w-4 text-green-600" />}
 										</div>
 
-										<span className="text-muted-foreground text-xs">
-											{review.time}
-										</span>
+										<span className="text-muted-foreground text-xs">{review.time}</span>
 									</div>
 									<div className="flex">
 										{[...Array(5)].map((_, i) => (
@@ -429,9 +438,7 @@ export default function ProductPage() {
 										))}
 									</div>
 								</div>
-								<p className="text-muted-foreground text-start text-sm">
-									{review.comment}
-								</p>
+								<p className="text-muted-foreground text-start text-sm">{review.comment}</p>
 							</div>
 						))}
 					</div>
@@ -453,26 +460,26 @@ export default function ProductPage() {
 							<Button
 								variant="outline"
 								className="h-11 flex-1 text-sm font-bold"
-								onClick={() => toggleFavorite(product.id)}
+								onClick={() => toggleFavorite(safeProduct.id)}
 								data-testid="button-favorite-fixed"
 							>
 								<Heart
-									className={`mr-2 h-4 w-4 ${isFavorite(product.id) ? 'fill-red-500 text-red-500' : ''}`}
+									className={`mr-2 h-4 w-4 ${isFavorite(safeProduct.id) ? 'fill-red-500 text-red-500' : ''}`}
 								/>
-								{isFavorite(product.id) ? 'مفضل' : 'مفضلة'}
+								{isFavorite(safeProduct.id) ? 'مفضل' : 'مفضلة'}
 							</Button>
 							<Button
 								variant="outline"
 								className="h-11 flex-1 text-sm font-bold"
 								onClick={() => {
-									addToCart(product.id);
+									addToCart(safeProduct.id);
 									setDialogMode('add');
 									setShowCartDialog(true);
 								}}
 								data-testid="button-cart-fixed"
 							>
 								<ShoppingCart className="mr-2 h-4 w-4" />
-								{isInCart(product.id) ? 'في السلة' : 'سلة'}
+								{isInCart(safeProduct.id) ? 'في السلة' : 'سلة'}
 							</Button>
 						</div>
 						<Button
@@ -503,12 +510,10 @@ export default function ProductPage() {
 				<Dialog open={showCartDialog} onOpenChange={setShowCartDialog}>
 					<DialogContent className="sm:max-w-md">
 						<DialogHeader>
-							<DialogTitle>
-								{dialogMode === 'add' ? 'خيارات الشراء' : 'قيد التطوير'}
-							</DialogTitle>
+							<DialogTitle>{dialogMode === 'add' ? 'خيارات الشراء' : 'قيد التطوير'}</DialogTitle>
 							<DialogDescription>
 								{dialogMode === 'add'
-									? `تم إضافة ${product.nameAr} إلى السلة. ماذا تريد أن تفعل؟`
+									? `تم إضافة ${safeProduct.nameAr} إلى السلة. ماذا تريد أن تفعل؟`
 									: 'Working in development'}
 							</DialogDescription>
 						</DialogHeader>
@@ -521,10 +526,7 @@ export default function ProductPage() {
 								>
 									متابعة التسوق
 								</Button>
-								<Button
-									className="flex-1"
-									onClick={() => setDialogMode('development')}
-								>
+								<Button className="flex-1" onClick={() => setDialogMode('development')}>
 									تأكيد الشراء
 								</Button>
 							</div>

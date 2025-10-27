@@ -36,6 +36,5 @@ export const useCategory = () => {
 		fetchData();
 	}, []);
 
-	console.log('Categories data:', data);
 	return { categories: data, loading, error };
 };

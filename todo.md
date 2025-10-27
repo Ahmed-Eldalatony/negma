@@ -1,4 +1,7 @@
 - Infinte loading in production
+- Adding some caching behaviors
+- Would we cosider SSR?
+- other optimizations strategies
 - print state for every reequest to debug that
 - fix taiwindlinter
 - fix and understand tailwind responsivess
