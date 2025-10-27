@@ -8,7 +8,6 @@ interface CategoryCardProps {
 }
 
 export default function CategoryCard({ category, className }: CategoryCardProps) {
-	console.log('=======', category);
 	return (
 		<Link className={cn(className)} to={`/category/${category.id}`}>
 			<div className="w-full flex-shrink-0" data-testid={`card-category-${category.id}`}>

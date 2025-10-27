@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useStoreDataStore } from '@/store';
+import { useStore } from '@/hooks/useStoreData';
 
 export default function HeroBanner() {
-	const { storedData } = useStoreDataStore();
+	const { storedData } = useStore();
 	const banners =
 		storedData?.banners?.map((banner, index) => ({
 			id: `banner-${index}`,

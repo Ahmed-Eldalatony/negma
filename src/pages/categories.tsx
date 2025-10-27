@@ -1,11 +1,13 @@
 import { Link } from 'react-router';
-import { categories } from '@/shared/mock-data';
 import CategoryCard from '@/components/CategoryCard';
 import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { useCategory } from '@/hooks/useCategory';
 
 export default function CategoriesPage() {
+	const { categories, loading, error } = useCategory();
+
 	return (
 		<div className="bg-background min-h-screen">
 			<header className="bg-background sticky top-0 z-40 border-b py-4">
@@ -26,13 +28,23 @@ export default function CategoriesPage() {
 			</header>
 
 			<div className="p-4">
-				<div className="grid grid-cols-2 gap-4">
-					{categories.map((category) => (
-						<Link key={category.id} to={`/category/${category.id}`}>
-							<CategoryCard category={category} />
-						</Link>
-					))}
-				</div>
+				{loading ? (
+					<div className="py-4 text-center">Loading categories...</div>
+				) : error ? (
+					<div className="py-4 text-center text-red-500">Error loading categories</div>
+				) : Array.isArray(categories) ? (
+					<div className="grid grid-cols-2 gap-4">
+						{categories
+							.map((cat) => ({ ...cat, id: cat.id.toString() }))
+							.map((category) => (
+								<Link key={category.id} to={`/category/${category.id}`}>
+									<CategoryCard category={category} />
+								</Link>
+							))}
+					</div>
+				) : (
+					<div className="py-4 text-center">No categories available</div>
+				)}
 			</div>
 
 			<BottomNav />

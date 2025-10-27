@@ -19,7 +19,6 @@ export const api = {
 			clearTimeout(timeoutId);
 
 			console.log('URL', BASE_URL + endpoint);
-			console.log('Response status:', response.status);
 
 			if (!response.ok) {
 				throw new Error(`API error: ${response.status} ${response.statusText}`);

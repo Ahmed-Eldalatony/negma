@@ -59,6 +59,5 @@ export const useStore = () => {
 		fetchData();
 	}, []);
 
-	console.log('Store data:', data);
 	return { storedData: data, loading, error };
 };

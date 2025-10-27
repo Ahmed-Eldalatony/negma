@@ -3,22 +3,33 @@ import { Link, useParams } from 'react-router';
 import ProductCard from '@/components/ProductCard';
 import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
-import { categories, products } from '@/shared/mock-data';
+import { useCategory } from '@/hooks/useCategory';
+import { products } from '@/shared/mock-data';
 
-export function meta({ params }: { params: { id?: string } }) {
-	const category = categories.find((c) => c.id === params.id);
-	return [
-		{ title: `${category?.name || 'تصنيف'} - نجمة` },
-		{ name: 'description', content: `تصفح منتجات ${category?.name || 'التصنيف'}` },
-	];
+export function meta() {
+	// For meta function, we can't use hooks, so we'll use a simple title
+	return [{ title: 'تصنيف - نجمة' }, { name: 'description', content: 'تصفح منتجات التصنيف' }];
 }
 
 export default function CategoryPage() {
 	const params = useParams();
 	const categoryId = params.id || '1';
+	const { categories, loading, error } = useCategory();
 
-	const category = categories.find((c) => c.id === categoryId);
+	const category = categories?.find((c) => c.id.toString() === categoryId);
 	const categoryProducts = products.filter((p) => p.category === categoryId);
+
+	if (loading) {
+		return <div className="flex h-screen items-center justify-center">جاري التحميل...</div>;
+	}
+
+	if (error) {
+		return (
+			<div className="flex h-screen items-center justify-center text-red-500">
+				خطأ في تحميل البيانات
+			</div>
+		);
+	}
 
 	return (
 		<div className="bg-background min-h-screen pb-20">
