@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router';
 // // import { useCounterStore } from './store';
 // // import { useTranslation } from 'react-i18next';
 import ProductPage from './pages/product';
-import CategoryPage from './pages/category';
+// import CategoryPage from './pages/category'; // commented out for now
 import FavoritesPage from './pages/favorites';
 import CartPage from './pages/cart';
 import CategoriesPage from './pages/categories';
@@ -18,15 +18,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useStore } from './hooks/useStoreData';
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000,   // 10 minutes
-      retry: process.env.NODE_ENV === 'production' ? 2 : 1,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      refetchOnWindowFocus: process.env.NODE_ENV === 'production',
-    },
-  },
+	defaultOptions: {
+		queries: {
+			staleTime: 5 * 60 * 1000, // 5 minutes
+			gcTime: 10 * 60 * 1000, // 10 minutes
+			retry: process.env.NODE_ENV === 'production' ? 2 : 1,
+			retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+			refetchOnWindowFocus: process.env.NODE_ENV === 'production',
+		},
+	},
 });
 
 function InnerApp() {
@@ -40,7 +40,8 @@ function InnerApp() {
 						<Route index element={<Home />} />
 						<Route path="product/:id" element={<ProductPage />} />
 						<Route path="categories" element={<CategoriesPage />} />
-						<Route path="category/:id" element={<CategoryPage />} />
+						{/* Route for category detail page with dynamic ID - commented out for now */}
+						{/* <Route path="category/:id" element={<CategoryPage />} /> */}
 						<Route path="favorites" element={<FavoritesPage />} />
 						<Route path="cart" element={<CartPage />} />
 					</Routes>

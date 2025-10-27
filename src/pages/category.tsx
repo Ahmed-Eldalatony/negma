@@ -1,25 +1,37 @@
-import { ArrowRight, Package } from 'lucide-react';
-import { Link, useParams } from 'react-router';
-import ProductCard from '@/components/ProductCard';
-import ProductCardSkeleton from '@/components/ProductCardSkeleton';
-import BottomNav from '@/components/BottomNav';
-import { Button } from '@/components/ui/button';
-import { useCategory } from '@/hooks/useCategory';
-import { useProductsStore } from '@/store';
+// Category page component that displays products for a specific category
+// Handles routes like /category/:id
 
+import { ArrowRight, Package } from 'lucide-react'; // Icons for UI elements
+import { Link, useParams } from 'react-router'; // React Router for navigation and URL params
+import ProductCard from '@/components/ProductCard'; // Component to display individual products
+import ProductCardSkeleton from '@/components/ProductCardSkeleton'; // Loading skeleton for products
+import BottomNav from '@/components/BottomNav'; // Bottom navigation component
+import { Button } from '@/components/ui/button'; // UI button component
+import { useCategory } from '@/hooks/useCategory'; // Custom hook to fetch categories
+import { useProductsStore } from '@/store'; // Zustand store for products data
+
+// Meta function for SEO - provides page title and description
+// Cannot use hooks here as it's a static function
 export function meta() {
-	// For meta function, we can't use hooks, so we'll use a simple title
 	return [{ title: 'تصنيف - نجمة' }, { name: 'description', content: 'تصفح منتجات التصنيف' }];
 }
 
+// Main component for the category page
 export default function CategoryPage() {
+	// Get category ID from URL params, default to '1' if not provided
 	const params = useParams();
 	const categoryId = params.id || '1';
+
+	// Fetch categories data using custom hook
 	const { categories, loading: categoriesLoading, error: categoriesError } = useCategory();
+	// Get products from global store
 	const { products, isLoading: productsLoading } = useProductsStore();
 
+	// Find the current category by ID
 	const category = categories?.find((c) => c.id.toString() === categoryId);
-	// For now, show all products since API doesn't categorize them
+
+	// Transform products data to match ProductCard component props
+	// Currently shows first 10 products as API doesn't filter by category yet
 	const categoryProducts = products
 		? products.slice(0, 10).map((p) => ({
 				id: p.id.toString(),
@@ -42,9 +54,11 @@ export default function CategoryPage() {
 			}))
 		: [];
 
+	// Show loading state while fetching data
 	if (categoriesLoading || productsLoading) {
 		return (
 			<div className="bg-background min-h-screen pb-20">
+				{/* Header with back button and category title */}
 				<header className="bg-background sticky top-0 z-40 border-b p-4">
 					<div className="flex items-center justify-between">
 						<Link to="/">
@@ -57,6 +71,7 @@ export default function CategoryPage() {
 						</h1>
 					</div>
 				</header>
+				{/* Loading skeletons for products */}
 				<div className="p-4">
 					<div className="grid grid-cols-2 gap-3">
 						{Array.from({ length: 6 }).map((_, i) => (
@@ -69,6 +84,7 @@ export default function CategoryPage() {
 		);
 	}
 
+	// Show error state if categories failed to load
 	if (categoriesError) {
 		return (
 			<div className="flex h-screen items-center justify-center text-red-500">
@@ -77,8 +93,10 @@ export default function CategoryPage() {
 		);
 	}
 
+	// Main render for loaded state
 	return (
 		<div className="bg-background min-h-screen pb-20">
+			{/* Header with back button and category title */}
 			<header className="bg-background sticky top-0 z-40 border-b p-4">
 				<div className="flex items-center justify-between">
 					<Link to="/">
@@ -92,7 +110,9 @@ export default function CategoryPage() {
 				</div>
 			</header>
 
+			{/* Main content area */}
 			<div className="p-4">
+				{/* Show empty state if no products */}
 				{categoryProducts.length === 0 ? (
 					<div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
 						<Package className="text-muted-foreground mb-4 h-16 w-16" />
@@ -103,6 +123,7 @@ export default function CategoryPage() {
 						</Link>
 					</div>
 				) : (
+					// Grid of product cards
 					<div className="grid grid-cols-2 gap-3">
 						{categoryProducts.map((product) => (
 							<ProductCard key={product.id} product={product} />
@@ -111,6 +132,7 @@ export default function CategoryPage() {
 				)}
 			</div>
 
+			{/* Bottom navigation */}
 			<BottomNav />
 		</div>
 	);
