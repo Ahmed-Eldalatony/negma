@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useStoreDataStore, useCategoriesStore, useProductsStore } from './store';
 import { categories as mockCategories, products as mockProducts } from '@/shared/mock-data'; // fallback to mock data
 
-export function meta({}: any) {
+export function meta() {
 	return [
 		{ title: 'نجمة - الرئيسية' },
 		{ name: 'description', content: 'تسوق المنتجات والتصنيفات في نجمة' },
@@ -27,14 +27,14 @@ export default function Home() {
 	const [hasFetched, setHasFetched] = useState({
 		store: false,
 		categories: false,
-		products: false
+		products: false,
 	});
 
 	useEffect(() => {
 		// Only fetch if not already fetched and not currently loading
 		if (!storedData && !isLoading && !hasFetched.store) {
 			fetchStoreData().then(() => {
-				setHasFetched(prev => ({ ...prev, store: true }));
+				setHasFetched((prev) => ({ ...prev, store: true }));
 			});
 		}
 	}, [storedData, isLoading, fetchStoreData, hasFetched.store]);
@@ -42,7 +42,7 @@ export default function Home() {
 	useEffect(() => {
 		if (!categories && !categoriesLoading && !hasFetched.categories) {
 			fetchCategories().then(() => {
-				setHasFetched(prev => ({ ...prev, categories: true }));
+				setHasFetched((prev) => ({ ...prev, categories: true }));
 			});
 		}
 	}, [categories, categoriesLoading, fetchCategories, hasFetched.categories]);
@@ -50,7 +50,7 @@ export default function Home() {
 	useEffect(() => {
 		if (!products && !productsLoading && !hasFetched.products) {
 			fetchProducts().then(() => {
-				setHasFetched(prev => ({ ...prev, products: true }));
+				setHasFetched((prev) => ({ ...prev, products: true }));
 			});
 		}
 	}, [products, productsLoading, fetchProducts, hasFetched.products]);

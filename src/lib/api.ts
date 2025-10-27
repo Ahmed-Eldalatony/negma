@@ -3,17 +3,17 @@ const TIMEOUT_DURATION = 10000; // 10 seconds
 
 export const api = {
 	get: async (endpoint: string) => {
-		try {
-			// Use AbortController for timeout
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_DURATION);
+		// Use AbortController for timeout
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_DURATION);
 
+		try {
 			const response = await fetch(`${BASE_URL}${endpoint}`, {
 				headers: {
-					'Accept': 'application/json',
+					Accept: 'application/json',
 					'Content-Type': 'application/json',
 				},
-				signal: controller.signal
+				signal: controller.signal,
 			});
 
 			clearTimeout(timeoutId);
@@ -29,7 +29,7 @@ export const api = {
 			return { data };
 		} catch (error) {
 			clearTimeout(timeoutId); // Clear the timeout if still active
-			if (error.name === 'AbortError') {
+			if (error instanceof Error && error.name === 'AbortError') {
 				console.error('API request timeout:', error);
 				throw new Error('Request timeout');
 			}

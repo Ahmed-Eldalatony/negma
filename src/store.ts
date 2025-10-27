@@ -206,7 +206,7 @@ export const useStoreDataStore = create<{
 					const timeoutId = setTimeout(() => controller.abort(), 10000);
 
 					const response = await fetch(`https://boddasaad.me/api/v1/store/${domain}`, {
-						signal: controller.signal
+						signal: controller.signal,
 					});
 
 					clearTimeout(timeoutId);
@@ -221,7 +221,7 @@ export const useStoreDataStore = create<{
 
 					set({ storedData, isLoading: false });
 				} catch (error) {
-					if (error.name === 'AbortError') {
+					if (error instanceof Error && error.name === 'AbortError') {
 						console.error('Store data request timeout:', error);
 						set({
 							error: 'Request timeout',
@@ -275,7 +275,7 @@ export const useCategoriesStore = create<{
 					const response = await fetch(
 						`https://boddasaad.me/api/v1/store/${domain}/categories`,
 						{
-							signal: controller.signal
+							signal: controller.signal,
 						}
 					);
 
@@ -290,7 +290,7 @@ export const useCategoriesStore = create<{
 
 					set({ categories, isLoading: false });
 				} catch (error) {
-					if (error.name === 'AbortError') {
+					if (error instanceof Error && error.name === 'AbortError') {
 						console.error('Categories request timeout:', error);
 						set({
 							error: 'Request timeout',
@@ -351,7 +351,7 @@ export const useProductsStore = create<{
 					const response = await fetch(
 						`https://boddasaad.me/api/v1/store/${domain}/products`,
 						{
-							signal: controller.signal
+							signal: controller.signal,
 						}
 					);
 
@@ -366,7 +366,7 @@ export const useProductsStore = create<{
 
 					set({ products, isLoading: false });
 				} catch (error) {
-					if (error.name === 'AbortError') {
+					if (error instanceof Error && error.name === 'AbortError') {
 						console.error('Products request timeout:', error);
 						set({
 							error: 'Request timeout',
@@ -394,7 +394,7 @@ export const useProductsStore = create<{
 					const response = await fetch(
 						`https://boddasaad.me/api/v1/store/${domain}/products/${id}`,
 						{
-							signal: controller.signal
+							signal: controller.signal,
 						}
 					);
 
@@ -409,7 +409,7 @@ export const useProductsStore = create<{
 
 					set({ currentProduct: product, isLoading: false });
 				} catch (error) {
-					if (error.name === 'AbortError') {
+					if (error instanceof Error && error.name === 'AbortError') {
 						console.error('Product request timeout:', error);
 						set({
 							error: 'Request timeout',

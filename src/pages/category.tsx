@@ -5,7 +5,7 @@ import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { categories, products } from '@/shared/mock-data';
 
-export function meta({ params }: any) {
+export function meta({ params }: { params: { id?: string } }) {
 	const category = categories.find((c) => c.id === params.id);
 	return [
 		{ title: `${category?.name || 'تصنيف'} - نجمة` },

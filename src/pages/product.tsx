@@ -37,7 +37,7 @@ import {
 import { products as mockProducts } from '@/shared/mock-data';
 import { useFavoritesStore, useCartStore, useProductsStore } from '@/store';
 // TODO: get the right type instead of any
-export function meta({ params }: any) {
+export function meta({ params }: { params: { id?: string } }) {
 	const product = mockProducts.find((p) => p.id === params.id);
 	return [
 		{ title: `${product?.nameAr || 'منتج'} - نجمة` },
