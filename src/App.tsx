@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router';
 // // import { useTranslation } from 'react-i18next';
 import ProductPage from './pages/product';
 import CategoryPage from './pages/category';
+import SearchPage from './pages/search';
 import FavoritesPage from './pages/favorites';
 import CartPage from './pages/cart';
 import CategoriesPage from './pages/categories';
@@ -41,6 +42,7 @@ function InnerApp() {
 						<Route path="product/:id" element={<ProductPage />} />
 						<Route path="categories" element={<CategoriesPage />} />
 						<Route path="category/:id" element={<CategoryPage />} />
+						<Route path="search" element={<SearchPage />} />
 						<Route path="favorites" element={<FavoritesPage />} />
 						<Route path="cart" element={<CartPage />} />
 					</Routes>

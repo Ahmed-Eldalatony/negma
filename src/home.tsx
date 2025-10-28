@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Menu, Rocket, Asterisk, Search } from 'lucide-react';
-import { Link } from 'react-router';
+import { Menu, Rocket, Asterisk } from 'lucide-react';
+import { Link, useNavigate } from 'react-router';
 import HeroBanner from '@/components/HeroBanner';
 import CategoryCard from '@/components/CategoryCard';
 import CategoryCardSkeleton from '@/components/CategoryCardSkeleton';
@@ -8,15 +8,8 @@ import ProductCard from '@/components/ProductCard';
 import ProductCardSkeleton from '@/components/ProductCardSkeleton';
 import BottomNav from '@/components/BottomNav';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
+import SearchFilter from '@/components/SearchFilter';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useProductsStore } from './store';
@@ -31,17 +24,23 @@ export function meta() {
 }
 
 export default function Home() {
+	const navigate = useNavigate();
 	const { storedData, error: storeError } = useStore();
 	const { categories, loading: categoriesLoading, error: categoriesError } = useCategory();
-	const {
-		filteredProducts,
-		isLoading: productsLoading,
-		fetchProductsWithFilters,
-	} = useProductsStore();
+	const { products, isLoading: productsLoading, fetchProducts } = useProductsStore();
 
 	// Search and filter state
 	const [searchText, setSearchText] = useState('');
 	const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
+
+	// Handle search navigation
+	const handleSearch = () => {
+		const params = new URLSearchParams();
+		if (searchText) params.set('query', searchText);
+		if (selectedCategoryId && selectedCategoryId !== 'all')
+			params.set('category', selectedCategoryId);
+		navigate(`/search?${params.toString()}`);
+	};
 
 	// Add state to track if data has been fetched to prevent infinite loops
 	const [hasFetched, setHasFetched] = useState({
@@ -49,20 +48,12 @@ export default function Home() {
 	});
 
 	useEffect(() => {
-		if (!filteredProducts && !productsLoading && !hasFetched.products) {
-			fetchProductsWithFilters(undefined, undefined).then(() => {
+		if (!products && !productsLoading && !hasFetched.products) {
+			fetchProducts().then(() => {
 				setHasFetched((prev) => ({ ...prev, products: true }));
 			});
 		}
-	}, [filteredProducts, productsLoading, fetchProductsWithFilters, hasFetched.products]);
-
-	// Fetch products when search or category filter changes
-	useEffect(() => {
-		if (hasFetched.products) {
-			const categoryId = selectedCategoryId === 'all' ? undefined : selectedCategoryId;
-			fetchProductsWithFilters(categoryId, searchText || undefined);
-		}
-	}, [selectedCategoryId, searchText, fetchProductsWithFilters, hasFetched.products]);
+	}, [products, productsLoading, fetchProducts, hasFetched.products]);
 
 	// Reset the fetched state when navigating to allow refetching
 	useEffect(() => {
@@ -124,31 +115,15 @@ export default function Home() {
 					</div>
 				</div>
 				{/* Search and filter bar */}
-				<div className="  py-3 ">
-					<div className="relative">
-						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
-						<Input
-							placeholder="البحث في المنتجات..."
-							value={searchText}
-							onChange={(e) => setSearchText(e.target.value)}
-							className="pl-10 pr-40 "
-						/>
-						<div className="absolute bg-gray-200 rounded-md right-1 top-1/2 -translate-y-1/2">
-							<Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
-								<SelectTrigger className="w-36 h-8 border-0 bg-transparent hover:bg-muted focus:ring-0">
-									<SelectValue placeholder="جميع التصنيفات" />
-								</SelectTrigger>
-								<SelectContent className="max-h-60 overflow-y-auto">
-									<SelectItem value="all">جميع التصنيفات</SelectItem>
-									{categories?.map((cat) => (
-										<SelectItem key={cat.id} value={cat.id.toString()}>
-											{cat.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					</div>
+				<div className="bg-background py-2">
+					<SearchFilter
+						searchText={searchText}
+						onSearchTextChange={setSearchText}
+						selectedCategoryId={selectedCategoryId}
+						onCategoryChange={setSelectedCategoryId}
+						categories={categories}
+						onSearch={handleSearch}
+					/>
 				</div>
 			</header>
 
@@ -190,8 +165,8 @@ export default function Home() {
 					<div className="grid grid-cols-2 px-4 gap-3">
 						{productsLoading ? (
 							Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
-						) : filteredProducts ? (
-							filteredProducts
+						) : products ? (
+							products
 								.slice(0, 4)
 								.map((p) => ({
 									id: p.id.toString(),
