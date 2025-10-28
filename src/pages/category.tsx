@@ -9,6 +9,8 @@ import BottomNav from '@/components/BottomNav'; // Bottom navigation component
 import { Button } from '@/components/ui/button'; // UI button component
 import { useCategory } from '@/hooks/useCategory'; // Custom hook to fetch categories
 import { useProductsStore } from '@/store'; // Zustand store for products data
+import { useEffect } from 'react';
+import type { Product } from '@/shared/mock-data';
 
 // Meta function for SEO - provides page title and description
 // Cannot use hooks here as it's a static function
@@ -18,22 +20,32 @@ export function meta() {
 
 // Main component for the category page
 export default function CategoryPage() {
-	// Get category ID from URL params, default to '1' if not provided
+	// Get category ID from URL params
 	const params = useParams();
-	const categoryId = params.id || '1';
+	const categoryId = params.id;
 
 	// Fetch categories data using custom hook
 	const { categories, loading: categoriesLoading, error: categoriesError } = useCategory();
 	// Get products from global store
-	const { products, isLoading: productsLoading } = useProductsStore();
+	const {
+		categoryProducts,
+		isLoading: productsLoading,
+		fetchProductsByCategory,
+	} = useProductsStore();
 
 	// Find the current category by ID
 	const category = categories?.find((c) => c.id.toString() === categoryId);
 
+	// Fetch products by category when component mounts or categoryId changes
+	useEffect(() => {
+		if (categoryId) {
+			fetchProductsByCategory(categoryId);
+		}
+	}, [categoryId, fetchProductsByCategory]);
+
 	// Transform products data to match ProductCard component props
-	// Currently shows first 10 products as API doesn't filter by category yet
-	const categoryProducts = products
-		? products.slice(0, 10).map((p) => ({
+	const transformedProducts: Product[] = categoryProducts
+		? categoryProducts.map((p) => ({
 				id: p.id.toString(),
 				name: p.name,
 				nameAr: p.name,
@@ -113,7 +125,7 @@ export default function CategoryPage() {
 			{/* Main content area */}
 			<div className="p-4">
 				{/* Show empty state if no products */}
-				{categoryProducts.length === 0 ? (
+				{transformedProducts.length === 0 ? (
 					<div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
 						<Package className="text-muted-foreground mb-4 h-16 w-16" />
 						<h2 className="mb-2 text-xl font-semibold">لا توجد منتجات</h2>
@@ -125,7 +137,7 @@ export default function CategoryPage() {
 				) : (
 					// Grid of product cards
 					<div className="grid grid-cols-2 gap-3">
-						{categoryProducts.map((product) => (
+						{transformedProducts.map((product) => (
 							<ProductCard key={product.id} product={product} />
 						))}
 					</div>

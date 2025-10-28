@@ -39,10 +39,9 @@ export default function CategoriesPage() {
 						{categories
 							.map((cat) => ({ ...cat, id: cat.id.toString() }))
 							.map((category) => (
-								// Link to individual category page - commented out for now
-								// <Link key={category.id} to={`/category/${category.id}`}>
-								<CategoryCard category={category} />
-								// </Link>
+								<Link key={category.id} to={`/category/${category.id}`}>
+									<CategoryCard category={category} />
+								</Link>
 							))}
 					</div>
 				) : (
