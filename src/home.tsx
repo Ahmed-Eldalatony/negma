@@ -17,6 +17,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useProductsStore } from './store';
 import { useStore } from '@/hooks/useStoreData';
@@ -86,7 +87,7 @@ export default function Home() {
 			</div>
 
 			{/* Header with Logo */}
-			<header className="bg-background sticky top-0 z-40 border-b px-4 py-3">
+			<header className="bg-background sticky top-0 z-40 border-b py-3 px-4">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2">
 						<Sheet>
@@ -123,19 +124,19 @@ export default function Home() {
 					</div>
 				</div>
 				{/* Search and filter bar */}
-				<div className="bg-background ">
+				<div className="  py-3 ">
 					<div className="relative">
 						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
 						<Input
 							placeholder="البحث في المنتجات..."
 							value={searchText}
 							onChange={(e) => setSearchText(e.target.value)}
-							className="pl-10 pr-38 "
+							className="pl-10 pr-40 "
 						/>
-						<div className="absolute right-1 top-1/2 rounded-md -translate-y-1/2">
+						<div className="absolute bg-gray-200 rounded-md right-1 top-1/2 -translate-y-1/2">
 							<Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
-								<SelectTrigger className="!w-36   !bg-gray-200 h-8 border-0 bg-transparent hover:bg-muted focus:ring-0">
-									<SelectValue className="" placeholder="جميع التصنيفات" />
+								<SelectTrigger className="w-36 h-8 border-0 bg-transparent hover:bg-muted focus:ring-0">
+									<SelectValue placeholder="جميع التصنيفات" />
 								</SelectTrigger>
 								<SelectContent className="max-h-60 overflow-y-auto">
 									<SelectItem value="all">جميع التصنيفات</SelectItem>
@@ -153,35 +154,40 @@ export default function Home() {
 
 			<HeroBanner />
 
-			<div className="space-y-6 p-4">
-				<section>
+			<div className="space-y-6 py-4 ">
+				<section className="min-w-28 max-w-[100vw]">
 					<h2 className="mb-3 text-lg font-bold" data-testid="text-categories-title">
 						التصنيفات
 					</h2>
-					<div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
-						{categoriesLoading ? (
-							Array.from({ length: 6 }).map((_, i) => (
-								<CategoryCardSkeleton key={i} className={'min-w-28'} />
-							))
-						) : categoriesError ? (
-							<div className="py-4 text-center text-red-500">Error loading categories</div>
-						) : Array.isArray(categories) ? (
-							categories
-								.map((cat) => ({ ...cat, id: cat.id.toString() }))
-								.map((category) => (
-									<CategoryCard className={'min-w-28'} key={category.id} category={category} />
+					<ScrollArea className="">
+						<div className="flex gap-3 pb-4 ">
+							{categoriesLoading ? (
+								Array.from({ length: 6 }).map((_, i) => (
+									<CategoryCardSkeleton key={i} className={'min-w-28'} />
 								))
-						) : (
-							<div className="py-4 text-center">No categories available</div>
-						)}
-					</div>
+							) : categoriesError ? (
+								<div className="py-4 text-center text-red-500">Error loading categories</div>
+							) : Array.isArray(categories) ? (
+								categories
+									.map((cat) => ({ ...cat, id: cat.id.toString() }))
+									.map((category) => (
+										<Link key={category.id} to={`/category/${category.id}`}>
+											<CategoryCard className={'min-w-28'} category={category} />
+										</Link>
+									))
+							) : (
+								<div className="py-4 text-center">No categories available</div>
+							)}
+						</div>
+						<ScrollBar orientation="horizontal" className="h-3" />
+					</ScrollArea>
 				</section>
 
 				<section>
 					<h2 className="mb-3 text-lg font-bold" data-testid="text-products-title">
 						المنتجات
 					</h2>
-					<div className="grid grid-cols-2 gap-3">
+					<div className="grid grid-cols-2 px-4 gap-3">
 						{productsLoading ? (
 							Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
 						) : filteredProducts ? (

@@ -20,7 +20,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 	return (
 		<Link to={`/product/${product.id}`}>
 			<div
-				className="group relative h-[280px] overflow-hidden rounded-md border border-gray-300"
+				className="group relative h-[280px] h-fit pb-2 overflow-hidden rounded-md border border-gray-300"
 				data-testid={`card-product-${product.id}`}
 			>
 				<div className="relattive bg-muted mb-2 aspect-square overflow-hidden">
@@ -39,9 +39,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 					>
 						<Heart
 							className={`h-5 w-5 ${
-								isFavorite(product.id)
-									? 'fill-red-500 text-red-500'
-									: 'text-gray-600'
+								isFavorite(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'
 							}`}
 						/>
 					</button>
@@ -70,19 +68,13 @@ export default function ProductCard({ product }: ProductCardProps) {
 								${product.originalPrice.toFixed(2)}
 							</span>
 						)}
-						<span
-							className="text-base font-bold"
-							data-testid={`text-price-${product.id}`}
-						>
+						<span className="text-base font-bold" data-testid={`text-price-${product.id}`}>
 							${product.price.toFixed(2)}
 						</span>
 					</div>
 
 					{!product.inStock && (
-						<p
-							className="text-destructive text-xs"
-							data-testid={`text-stock-${product.id}`}
-						>
+						<p className="text-destructive text-xs" data-testid={`text-stock-${product.id}`}>
 							نفذت الكمية
 						</p>
 					)}
