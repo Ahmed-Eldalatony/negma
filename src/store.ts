@@ -48,6 +48,15 @@ interface Product {
 		options: { value: string; attribute: string }[];
 		inventory: number;
 	}[];
+	reviews: {
+		id: number;
+		customer_name: string;
+		rating: number;
+		title: string;
+		body: string;
+		created_at: string;
+		updated_at: string;
+	}[];
 }
 
 export interface StoreData {

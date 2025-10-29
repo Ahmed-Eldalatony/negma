@@ -1,4 +1,4 @@
-- Infinte loading in production
+- fxingn small skeletons size
 - Adding some caching behaviors
 - Would we cosider SSR?
 - other optimizations strategies

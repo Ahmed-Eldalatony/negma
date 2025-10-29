@@ -121,44 +121,27 @@ export default function ProductPage() {
 	const safeProduct = product!;
 	const productImages = [safeProduct.image, safeProduct.image, safeProduct.image];
 
-	// TODO: remove mock functionality
-	const reviews = [
-		{
-			id: 1,
-			name: 'محمد رضا',
-			verified: true,
-			time: 'منذ 3 أيام',
-			rating: 4,
-			comment: 'أداء مذهل، وجودة عالية. أنصح الجميع بشرائها!',
-		},
-		{
-			id: 2,
-			name: 'فاطمة وليد',
-			verified: true,
-			time: 'منذ أسبوع',
-			rating: 5,
-			comment: 'جودة عالية وسعر مناسب. استحقت كل الثناء.',
-		},
-		{
-			id: 3,
-			name: 'زينب حسين',
-			verified: true,
-			time: 'منذ 3 أيام',
-			rating: 5,
-			comment: 'عطور أنيق، منتج رائع بكل تأكيد.',
-		},
-		{
-			id: 4,
-			name: 'عبدالله حسان',
-			verified: true,
-			time: 'منذ 4 أيام',
-			rating: 4,
-			comment: 'منتج عملي ومنظم، لا أستطيع الاستغناء عنه الآن.',
-		},
-	];
+	const reviews = currentProduct?.reviews || [];
+
+	const getTimeAgo = (dateString: string) => {
+		const now = new Date();
+		const reviewDate = new Date(dateString);
+		const diffTime = Math.abs(now.getTime() - reviewDate.getTime());
+		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+		if (diffDays === 1) {
+			return 'منذ يوم واحد';
+		} else if (diffDays === 2) {
+			return 'منذ يومين';
+		} else if (diffDays >= 3 && diffDays <= 10) {
+			return `منذ ${diffDays} أيام`;
+		} else {
+			return `منذ ${diffDays} يوم`;
+		}
+	};
 
 	return (
-		<div className="bg-background min-h-screen">
+		<div className="bg-background min-h-screen mb-40">
 			<div className="space-y-3 p-4">
 				<div className="relative">
 					{safeProduct.rating && (
@@ -420,14 +403,16 @@ export default function ProductPage() {
 								className="rounded-md border p-4"
 								data-testid={`review-${review.id}`}
 							>
-								<div className="mb-2 flex items-start justify-between">
-									<div>
-										<div className="flex items-center gap-2">
-											<span className="font-medium">{review.name}</span>
-											{review.verified && <Check className="h-4 w-4 text-green-600" />}
+								<div className="mb-2  flex  justify-between">
+									<div className=" text-start">
+										<div className="flex items-center gap-2 ">
+											<span className="font-medium">{review.customer_name}</span>
+											<Check className="h-4 w-4 text-green-600" />
 										</div>
 
-										<span className="text-muted-foreground text-xs">{review.time}</span>
+										<span className="text-muted-foreground  text-xs">
+											{getTimeAgo(review.created_at)}
+										</span>
 									</div>
 									<div className="flex">
 										{[...Array(5)].map((_, i) => (
@@ -438,7 +423,10 @@ export default function ProductPage() {
 										))}
 									</div>
 								</div>
-								<p className="text-muted-foreground text-start text-sm">{review.comment}</p>
+								{review.title && (
+									<h4 className="font-medium text-start text-sm mb-1">{review.title}</h4>
+								)}
+								<p className="text-muted-foreground text-start text-sm">{review.body}</p>
 							</div>
 						))}
 					</div>
