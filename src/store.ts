@@ -4,8 +4,7 @@ import { persist } from 'zustand/middleware';
 
 export const SUBDOMAIN = () => {
 	const parts = window.location.hostname.split('.');
-	if (parts.length <= 2) return ''; // مفيش subdomain
-	// هنا نعتبر أن الدومين هو آخر قطعتين
+	if (parts.length <= 2) return parts[0]; // مفيش SUBDOMAIN()	
 	return parts.slice(0, -2).join('.');
 }
 
@@ -212,7 +211,7 @@ export const useProductsStore = create<{
 			const controller = new AbortController();
 			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-			const response = await fetch(`https://boddasaad.me/api/v1/store/${SUBDOMAIN}/products`, {
+			const response = await fetch(`https://boddasaad.me/api/v1/store/${SUBDOMAIN()}/products`, {
 				signal: controller.signal,
 			});
 
@@ -253,7 +252,7 @@ export const useProductsStore = create<{
 			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
 			const response = await fetch(
-				`https://boddasaad.me/api/v1/store/${SUBDOMAIN}/products?category_id=${categoryId}`,
+				`https://boddasaad.me/api/v1/store/${SUBDOMAIN()}/products?category_id=${categoryId}`,
 				{
 					signal: controller.signal,
 				}
@@ -301,7 +300,7 @@ export const useProductsStore = create<{
 			if (search) params.append('search', search);
 			const queryString = params.toString();
 
-			const url = `https://boddasaad.me/api/v1/store/${SUBDOMAIN}/products${queryString ? `?${queryString}` : ''}`;
+			const url = `https://boddasaad.me/api/v1/store/${SUBDOMAIN()}/products${queryString ? `?${queryString}` : ''}`;
 
 			const response = await fetch(url, {
 				signal: controller.signal,
@@ -343,7 +342,7 @@ export const useProductsStore = create<{
 			const controller = new AbortController();
 			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-			const response = await fetch(`https://boddasaad.me/api/v1/store/${SUBDOMAIN}/products/${id}`, {
+			const response = await fetch(`https://boddasaad.me/api/v1/store/${SUBDOMAIN()}/products/${id}`, {
 				signal: controller.signal,
 			});
 

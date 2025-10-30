@@ -48,7 +48,7 @@ export const useStore = () => {
 			try {
 				setLoading(true);
 				setError(null);
-				const res = await api.get(`v1/store/${SUBDOMAIN}`);
+				const res = await api.get(`v1/store/${SUBDOMAIN()}`);
 				setData(res.data.data);
 			} catch (err) {
 				console.error('API error:', err);
