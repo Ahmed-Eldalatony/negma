@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
+import { SUBDOMAIN } from '@/store';
 
 export interface Category {
 	id: number;
@@ -24,7 +25,7 @@ export const useCategory = () => {
 			try {
 				setLoading(true);
 				setError(null);
-				const res = await api.get('v1/store/hwm.negma.vercel.app/categories');
+				const res = await api.get(`v1/store/${SUBDOMAIN}/categories`);
 				setData(res.data.data);
 			} catch (err) {
 				console.error('API error:', err);

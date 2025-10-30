@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 // import { useStoreDataStore } from '../store';
 import { api } from '../lib/api';
+import { SUBDOMAIN } from '@/store';
 
 interface Pixel {
 	id: string;
@@ -47,7 +48,7 @@ export const useStore = () => {
 			try {
 				setLoading(true);
 				setError(null);
-				const res = await api.get('v1/store/hwm.negma.vercel.app');
+				const res = await api.get(`v1/store/${SUBDOMAIN}`);
 				setData(res.data.data);
 			} catch (err) {
 				console.error('API error:', err);

@@ -9,7 +9,7 @@ interface CategoryCardProps {
 export default function CategoryCard({ category, className }: CategoryCardProps) {
   return (
     <div className={cn(className)}>
-      <div className="w-full flex-shrink-0" data-testid={`card-category-${category.id}`}>
+      <div className="w-full flex- dkmshrink-0" data-testid={`card-category-${category.id}`}>
         <div className="bg-muted mb-2 aspect-square overflow-hidden rounded-md">
           <img
             src={category.image}

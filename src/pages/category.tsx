@@ -1,6 +1,3 @@
-// Category page component that displays products for a specific category
-// Handles routes like /category/:id
-
 import { ArrowRight, Package } from 'lucide-react'; // Icons for UI elements
 import { Link, useParams } from 'react-router'; // React Router for navigation and URL params
 import ProductCard from '@/components/ProductCard'; // Component to display individual products
