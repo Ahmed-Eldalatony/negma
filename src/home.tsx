@@ -65,6 +65,7 @@ export default function Home() {
 	if (storeError) {
 		console.error('Error loading store data:', storeError);
 	}
+
 	return (
 		<div className="mb-20 min-h-screen">
 			{/* Top Banner */}

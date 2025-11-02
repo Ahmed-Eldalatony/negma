@@ -1,10 +1,11 @@
 import { Minus, Plus, Trash2, ArrowRight, ShoppingCart } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useCartStore, useProductsStore } from '@/store';
 import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 
 export default function CartPage() {
+	const navigate = useNavigate();
 	const { cart, updateQuantity, removeFromCart } = useCartStore();
 	const { products, isLoading } = useProductsStore();
 
@@ -79,8 +80,8 @@ export default function CartPage() {
 	}
 
 	return (
-		<div className="min-h-screen pb-20">
-			<header className="bg-background sticky top-0 z-40 border-b p-4">
+		<div className="min-h-screen  w-sm pb-20">
+			<header className="bg-background sticky top-0 z-40 border-b p-2">
 				<div className="flex items-center justify-between">
 					<Link to="/">
 						<Button variant="ghost" size="icon" data-testid="button-back">
@@ -94,20 +95,20 @@ export default function CartPage() {
 				</div>
 			</header>
 
-			<div className="space-y-4 p-4">
+			<div className="space-y-4 p-2">
 				{cartItems.map((item) => (
-					<div key={item.id} className="bg-muted rounded-lg p-4">
+					<div key={item.id} className="bg-muted rounded-lg p-2">
 						<div className="flex gap-4">
 							<img src={item.image} alt={item.name} className="h-20 w-20 rounded-md object-cover" />
-							<div className="flex-1">
-								<h3 className="mb-1 text-sm font-medium">{item.name}</h3>
-								<p className="text-primary font-bold">{item.price} ريال</p>
-								<div className="mt-2 flex items-center justify-between">
-									<div className="flex items-center gap-2">
+							<div className=" w-full flex  flex-wrap justify-between">
+								<h3 className="mb-1 text-start text-sm font-medium">{item.name}</h3>
+								<p className="text-primary text-start font-bold">{item.price} ريال</p>
+								<div className="mt-2 w-full flex items-center justify-between">
+									<div className="flex  items-center gap-2">
 										<Button
 											variant="outline"
 											size="icon"
-											className="h-8 w-8"
+											className="h-6 w-6  rounded-full"
 											onClick={() => updateQuantity(item.id, item.quantity - 1)}
 											disabled={item.quantity <= 1}
 										>
@@ -117,7 +118,7 @@ export default function CartPage() {
 										<Button
 											variant="outline"
 											size="icon"
-											className="h-8 w-8"
+											className="h-6 w-6 rounded-full"
 											onClick={() => updateQuantity(item.id, item.quantity + 1)}
 										>
 											<Plus className="h-4 w-4" />
@@ -127,7 +128,7 @@ export default function CartPage() {
 										variant="ghost"
 										size="icon"
 										onClick={() => removeFromCart(item.id)}
-										className="text-destructive hover:text-destructive"
+										className="text-destructive hover:text-destructive mr-auto"
 									>
 										<Trash2 className="h-4 w-4" />
 									</Button>
@@ -142,11 +143,15 @@ export default function CartPage() {
 						<span className="font-medium">المجموع الكلي:</span>
 						<span className="text-primary text-lg font-bold">{total.toFixed(2)} ريال</span>
 					</div>
-					<div className="text-muted-foreground text-xs">الشحن مجاني على الطلبات فوق 50 ريال</div>
+					{/* <div className="text-muted-foreground text-xs">الشحن مجاني على الطلبات فوق 50 ريال</div> */}
 				</div>
 
 				<div className="space-y-2">
-					<Button className="h-12 w-full font-bold" data-testid="button-checkout">
+					<Button
+						className="h-12 w-full font-bold"
+						data-testid="button-checkout"
+						onClick={() => navigate('/checkout')}
+					>
 						إتمام الطلب
 					</Button>
 					<Link to="/">
