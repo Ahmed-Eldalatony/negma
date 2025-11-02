@@ -11,7 +11,7 @@ export default function CategoriesPage() {
 
 	return (
 		<div className="bg-background min-h-screen">
-			<header className="bg-background sticky top-0 z-40 border-b py-4">
+			<header className="bg-background sticky top-0 z-40 border-b p-4">
 				<div className="flex items-center justify-between">
 					<Link to="/">
 						<Button variant="ghost" size="icon" data-testid="button-back">
@@ -25,7 +25,7 @@ export default function CategoriesPage() {
 				</div>
 			</header>
 
-			<div className="p-4">
+			<div className="p-4 w-sm">
 				{loading ? (
 					<div className="grid grid-cols-2 gap-4">
 						{Array.from({ length: 6 }).map((_, i) => (

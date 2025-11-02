@@ -66,7 +66,7 @@ export default function CategoryPage() {
 	// Show loading state while fetching data
 	if (categoriesLoading || productsLoading) {
 		return (
-			<div className="bg-background min-h-screen pb-20">
+			<div className="bg-background w-sm min-h-screen pb-20">
 				{/* Header with back button and category title */}
 				<header className="bg-background sticky top-0 z-40 border-b p-4">
 					<div className="flex items-center justify-between">

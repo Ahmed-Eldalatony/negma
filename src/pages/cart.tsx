@@ -27,7 +27,7 @@ export default function CartPage() {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen pb-20">
+			<div className="min-h-screen  w-sm pb-20">
 				<header className="bg-background sticky top-0 z-40 border-b p-4">
 					<div className="flex items-center justify-between">
 						<Link to="/">
@@ -48,15 +48,18 @@ export default function CartPage() {
 
 	if (cartItems.length === 0) {
 		return (
-			<div className="min-h-screen min-w-full pb-20">
-				<header className="bg-background sticky top-0 z-40 border-b p-4">
+			<div className="min-h-screen w-sm  pb-20">
+				<header className="bg-background w-full sticky top-0 z-40 border-b p-4">
 					<div className="flex items-center justify-between">
 						<Link to="/">
 							<Button variant="ghost" size="icon" data-testid="button-back">
 								<ArrowRight className="h-5 w-5" />
 							</Button>
 						</Link>
-						<h1 className="flex-1 text-center text-lg font-bold" data-testid="text-cart-title">
+						<h1
+							className="flex-1 text-center  text-center  text-lg font-bold"
+							data-testid="text-cart-title"
+						>
 							السلة
 						</h1>
 						<div className="w-10" />
