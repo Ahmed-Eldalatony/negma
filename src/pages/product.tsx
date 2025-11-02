@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import {
 	Star,
 	Check,
@@ -43,6 +43,7 @@ export function meta() {
 
 export default function ProductPage() {
 	const params = useParams();
+	const navigate = useNavigate();
 	const productId = params.id || '1';
 
 	const { currentProduct, fetchProduct, isLoading } = useProductsStore();
@@ -514,7 +515,13 @@ export default function ProductPage() {
 								>
 									متابعة التسوق
 								</Button>
-								<Button className="flex-1" onClick={() => setDialogMode('development')}>
+								<Button
+									className="flex-1"
+									onClick={() => {
+										setShowCartDialog(false);
+										navigate('/checkout');
+									}}
+								>
 									تأكيد الشراء
 								</Button>
 							</div>

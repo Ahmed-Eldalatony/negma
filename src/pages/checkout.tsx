@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { api } from '@/lib/api';
 import PaymentMethodPage from '@/components/PaymentMethodPage';
+import { GccPhoneInput } from '@/components/ui/phone-number-input';
 
 type Country = {
 	id: number;
@@ -107,6 +108,15 @@ const CheckoutPage = () => {
 		},
 	});
 
+	const handlePrimaryPhoneChange = useCallback(
+		(value: string) => setValue('primaryPhone', value),
+		[setValue]
+	);
+	const handleAdditionalPhoneChange = useCallback(
+		(value: string) => setValue('additionalPhone', value),
+		[setValue]
+	);
+
 	const onSubmit = (data: Record<string, unknown>) => {
 		setIsSubmitting(true);
 		// Simulate API call
@@ -142,15 +152,15 @@ const CheckoutPage = () => {
 	}
 
 	return (
-		<div className="min-h-screen bg-background mt-4  w-sm px-4" dir="rtl">
+		<div className="min-h-screen bg-background my-4  w-sm px-4" dir="rtl">
 			<div className="max-w-2xl mx-auto">
 				<Card>
-					<CardHeader className="bg-primary  rounded-t-lg overflow-hidden text-primary-foreground">
+					<CardHeader className="bg-primary mb-4  rounded-t-lg overflow-hidden text-primary-foreground">
 						<CardTitle>إتمام الطلب</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-							<div className="space-y-4 !text-start">
+							<div className="space-y-4  !text-start">
 								{/* Full Name */}
 								<div className="relative">
 									<Label htmlFor="fullName" className="text-sm font-medium text-foreground mb-1">
@@ -177,11 +187,12 @@ const CheckoutPage = () => {
 									</Label>
 									<div className="relative">
 										<Select
+											dir="rtl"
 											value={selectedCountry}
 											onValueChange={(value) => {
 												setSelectedCountry(value);
 												setValue('country', value);
-												setValue('city', ''); // Reset city when country changes
+												setValue('city', '');
 											}}
 										>
 											<SelectTrigger className={errors.country ? 'border-destructive' : ''}>
@@ -208,6 +219,7 @@ const CheckoutPage = () => {
 									</Label>
 									<div className="relative">
 										<Select
+											dir="rtl"
 											value={watch('city')}
 											onValueChange={(value) => setValue('city', value)}
 											disabled={!selectedCountry}
@@ -231,21 +243,13 @@ const CheckoutPage = () => {
 
 								{/* Primary Phone Number */}
 								<div className="relative">
-									<Label
-										htmlFor="primaryPhone"
-										className="text-sm font-medium text-foreground mb-1"
-									>
+									<Label className="text-sm font-medium text-foreground mb-1">
 										رقم الهاتف الأساسي
 									</Label>
-									<div className="relative">
-										<Input
-											type="tel"
-											id="primaryPhone"
-											className={errors.primaryPhone ? 'border-destructive ' : ''}
-											placeholder="01xxxxxxxxx"
-											{...register('primaryPhone')}
-										/>
-									</div>
+									<GccPhoneInput
+										value={watch('primaryPhone')}
+										onChange={handlePrimaryPhoneChange}
+									/>
 									{errors.primaryPhone && (
 										<p className="mt-1 text-sm text-destructive">{errors.primaryPhone.message}</p>
 									)}
@@ -253,20 +257,13 @@ const CheckoutPage = () => {
 
 								{/* Additional Phone Number */}
 								<div className="relative">
-									<Label
-										htmlFor="additionalPhone"
-										className="text-sm font-medium text-foreground mb-1 "
-									>
+									<Label className="text-sm font-medium text-foreground mb-1 ">
 										رقم هاتف إضافي (اختياري)
 									</Label>
-									<div className="relative">
-										<Input
-											type="tel"
-											id="additionalPhone"
-											placeholder="01xxxxxxxxx"
-											{...register('additionalPhone')}
-										/>
-									</div>
+									<GccPhoneInput
+										value={watch('additionalPhone')}
+										onChange={handleAdditionalPhoneChange}
+									/>
 								</div>
 
 								{/* Detailed Address */}
