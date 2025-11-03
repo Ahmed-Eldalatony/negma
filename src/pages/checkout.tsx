@@ -62,6 +62,7 @@ const CheckoutPage = () => {
 	const [countries, setCountries] = useState<Country[]>([]);
 	const [cities, setCities] = useState<City[]>([]);
 	const [selectedCountry, setSelectedCountry] = useState<string>('');
+	const [selectedCountryCode, setSelectedCountryCode] = useState<string>('');
 
 	useEffect(() => {
 		const fetchCountries = async () => {
@@ -184,6 +185,9 @@ const CheckoutPage = () => {
 												setSelectedCountry(value);
 												setValue('country', value);
 												setValue('city', '');
+												// Find the country code for phone input
+												const country = countries.find((c) => c.id.toString() === value);
+												setSelectedCountryCode(country?.code || '');
 											}}
 										>
 											<SelectTrigger className={errors.country ? 'border-destructive' : ''}>
@@ -240,6 +244,7 @@ const CheckoutPage = () => {
 									<GccPhoneInput
 										value={watch('primaryPhone')}
 										onChange={handlePrimaryPhoneChange}
+										countryCode={selectedCountryCode}
 									/>
 								</div>
 
@@ -251,6 +256,7 @@ const CheckoutPage = () => {
 									<GccPhoneInput
 										value={watch('additionalPhone')}
 										onChange={handleAdditionalPhoneChange}
+										countryCode={selectedCountryCode}
 									/>
 								</div>
 

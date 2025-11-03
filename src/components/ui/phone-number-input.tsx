@@ -81,15 +81,26 @@ interface GccPhoneInputProps {
 	value?: string;
 	onChange?: (value: string) => void;
 	className?: string;
+	countryCode?: string; // ISO country code (e.g., 'EG', 'SA') to control the selected country
 }
 
-export const GccPhoneInput = ({ value, onChange, className }: GccPhoneInputProps) => {
+export const GccPhoneInput = ({ value, onChange, className, countryCode }: GccPhoneInputProps) => {
 	// Default to the first country in the list (Bahrain after sorting)
 	const defaultCountry = GCC_COUNTRIES[0];
 
 	const [selectedCountry, setSelectedCountry] = useState(defaultCountry);
 	const [phoneNumber, setPhoneNumber] = useState('');
 	const [error, setError] = useState('');
+
+	// Update selected country when countryCode prop changes
+	useEffect(() => {
+		if (countryCode) {
+			const country = GCC_COUNTRIES.find((c) => c.code === countryCode);
+			if (country) {
+				setSelectedCountry(country);
+			}
+		}
+	}, [countryCode]);
 
 	// --- Validation Function ---
 	const validateNumber = (number: string, country: typeof defaultCountry) => {
@@ -155,11 +166,14 @@ export const GccPhoneInput = ({ value, onChange, className }: GccPhoneInputProps
 		<div className={cn('space-y-2', className)}>
 			<div className="relative">
 				{/* Country Selector nested in input */}
-				<Select value={selectedCountry.code} onValueChange={handleCountryChange}>
+				<Select
+					value={selectedCountry.code}
+					onValueChange={handleCountryChange}
+					disabled={!!countryCode}
+				>
 					<SelectTrigger className="absolute left-2 top-1/2 -translate-y-1/2 w-auto h-auto p-0 border-0 bg-transparent z-10">
 						<SelectValue>
-							<div className="flex items-center space-x-1">
-								<span className="text-lg">{selectedCountry.flag}</span>
+							<div className="flex items-center">
 								<span className="text-sm text-muted-foreground">{selectedCountry.dialCode}</span>
 							</div>
 						</SelectValue>
