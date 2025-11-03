@@ -8,6 +8,7 @@ import SearchPage from './pages/search';
 import FavoritesPage from './pages/favorites';
 import CartPage from './pages/cart';
 import CheckoutPage from './pages/checkout';
+import OrdersPage from './pages/orders';
 import CategoriesPage from './pages/categories';
 // import IconDemo from '@/pages/IconDemo';
 import './i18n';
@@ -47,6 +48,7 @@ function InnerApp() {
 						<Route path="favorites" element={<FavoritesPage />} />
 						<Route path="cart" element={<CartPage />} />
 						<Route path="checkout" element={<CheckoutPage />} />
+						<Route path="orders" element={<OrdersPage />} />
 					</Routes>
 				</Layout>
 			</ThemeProvider>

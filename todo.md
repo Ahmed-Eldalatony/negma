@@ -1,4 +1,4 @@
-- fxingn small skeletons size
+- the phonenumber component is not perfect
 - Adding some caching behaviors
 - Would we cosider SSR?
 - other optimizations strategies

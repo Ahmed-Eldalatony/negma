@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
+import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CheckCircle } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,15 +48,16 @@ const checkoutSchema = z.object({
 	fullName: z.string().min(3, { message: 'الاسم الكامل مطلوب' }),
 	country: z.string().min(1, { message: 'الدولة مطلوبة' }),
 	city: z.string().min(2, { message: 'المدينة مطلوبة' }),
-	primaryPhone: z.string().regex(/^01[0-2,5]\d{8}$/, { message: 'رقم الهاتف غير صالح' }),
+	primaryPhone: z.string().optional(),
 	additionalPhone: z.string().optional(),
 	detailedAddress: z.string().min(10, { message: 'العنوان التفصيلي مطلوب' }),
 	orderNotes: z.string().optional(),
 });
 
 const CheckoutPage = () => {
+	const navigate = useNavigate();
+	const { toast } = useToast();
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [orderPlaced, setOrderPlaced] = useState(false);
 	const [showPayment, setShowPayment] = useState(false);
 	const [countries, setCountries] = useState<Country[]>([]);
 	const [cities, setCities] = useState<City[]>([]);
@@ -129,25 +132,13 @@ const CheckoutPage = () => {
 	};
 
 	if (showPayment) {
-		return <PaymentMethodPage onPaymentComplete={() => setOrderPlaced(true)} />;
-	}
-
-	if (orderPlaced) {
 		return (
-			<div className="min-h-screen bg-background flex items-center justify-center p-4">
-				<Card className="p-8 max-w-md w-full text-center">
-					<div className="flex justify-center mb-4">
-						<CheckCircle className="text-green-500 h-16 w-16" />
-					</div>
-					<CardTitle className="text-2xl mb-2">تم استلام طلبك بنجاح!</CardTitle>
-					<p className="text-muted-foreground mb-6">
-						سيتم توصيل طلبك إلى العنوان المحدد في أقرب وقت ممكن.
-					</p>
-					<Button onClick={() => setOrderPlaced(false)} className="w-full">
-						طلب جديد
-					</Button>
-				</Card>
-			</div>
+			<PaymentMethodPage
+				onPaymentComplete={() => {
+					toast({ title: 'نجح الدفع', description: 'تم إتمام الطلب بنجاح' });
+					navigate('/orders');
+				}}
+			/>
 		);
 	}
 
@@ -250,9 +241,6 @@ const CheckoutPage = () => {
 										value={watch('primaryPhone')}
 										onChange={handlePrimaryPhoneChange}
 									/>
-									{errors.primaryPhone && (
-										<p className="mt-1 text-sm text-destructive">{errors.primaryPhone.message}</p>
-									)}
 								</div>
 
 								{/* Additional Phone Number */}

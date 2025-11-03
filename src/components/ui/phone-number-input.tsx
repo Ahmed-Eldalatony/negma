@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
 	Select,
 	SelectContent,
@@ -9,21 +9,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
-// --- Data and Types ---
-
-// 1. Define a clear type for a country object
-type Country = {
-	name: string;
-	nameAr: string;
-	code: string;
-	dialCode: string;
-	flag: string;
-	minLength: number;
-	maxLength: number;
-};
-
-// 2. Define the list of countries with the new type
-const GCC_COUNTRIES: Country[] = [
+// 1. Updated data for GCC countries and Egypt
+const GCC_COUNTRIES = [
 	{
 		name: 'Bahrain',
 		nameAr: 'البحرين',
@@ -86,42 +73,10 @@ const GCC_COUNTRIES: Country[] = [
 		flag: '🇦🇪',
 		minLength: 8,
 		maxLength: 9,
-	},
-].sort((a, b) => a.nameAr.localeCompare(b.nameAr));
+	}, // Mobile is 8, landlines can be 9
+].sort((a, b) => a.nameAr.localeCompare(b.nameAr)); // Sort alphabetically by Arabic name
 
-// 3. Set a specific, reliable default country
-const DEFAULT_COUNTRY = GCC_COUNTRIES.find((c) => c.code === 'SA') || GCC_COUNTRIES[0];
-
-// --- Helper Function ---
-
-// A utility to parse the full phone number string (the `value` prop)
-const parsePhoneNumber = (value: string | undefined): { country: Country; number: string } => {
-	if (!value) {
-		return { country: DEFAULT_COUNTRY, number: '' };
-	}
-
-	// Find the country that matches the dial code prefix
-	const matchedCountry = GCC_COUNTRIES.find((c) => value.startsWith(c.dialCode));
-
-	if (matchedCountry) {
-		const number = value.substring(matchedCountry.dialCode.length);
-		return { country: matchedCountry, number };
-	}
-
-	// Special case for Egyptian numbers that might start with '0' instead of '+20'
-	if (value.startsWith('0') && value.length > 1) {
-		const egypt = GCC_COUNTRIES.find((c) => c.code === 'EG');
-		if (egypt) {
-			return { country: egypt, number: value.substring(1) };
-		}
-	}
-
-	// If no match, return the default country and assume the value is the number
-	return { country: DEFAULT_COUNTRY, number: value.replace(/\D/g, '') };
-};
-
-// --- Component Definition ---
-
+// Define the component's props
 interface GccPhoneInputProps {
 	value?: string;
 	onChange?: (value: string) => void;
@@ -129,76 +84,79 @@ interface GccPhoneInputProps {
 }
 
 export const GccPhoneInput = ({ value, onChange, className }: GccPhoneInputProps) => {
-	// --- State Management ---
+	// Default to the first country in the list (Bahrain after sorting)
+	const defaultCountry = GCC_COUNTRIES[0];
 
-	// Initialize state directly from the `value` prop using the helper function
-	const [selectedCountry, setSelectedCountry] = useState<Country>(
-		() => parsePhoneNumber(value).country
-	);
-	const [phoneNumber, setPhoneNumber] = useState<string>(() => parsePhoneNumber(value).number);
+	const [selectedCountry, setSelectedCountry] = useState(defaultCountry);
+	const [phoneNumber, setPhoneNumber] = useState('');
 	const [error, setError] = useState('');
 
-	// --- Effects ---
+	// --- Validation Function ---
+	const validateNumber = (number: string, country: typeof defaultCountry) => {
+		if (number.length === 0) {
+			return '';
+		}
+		if (number.length < country.minLength) {
+			return `قصير جداً. يجب أن يكون ${country.minLength}-${country.maxLength} أرقام.`;
+		}
+		if (number.length > country.maxLength) {
+			return `طويل جداً. يجب أن يكون ${country.minLength}-${country.maxLength} أرقام.`;
+		}
+		return '';
+	};
 
-	// Effect to synchronize the component's state when the `value` prop changes externally
+	// Effect to parse an initial value prop
 	useEffect(() => {
-		const { country, number } = parsePhoneNumber(value);
-		setSelectedCountry(country);
-		setPhoneNumber(number);
+		if (value) {
+			let country = GCC_COUNTRIES.find((c) => value.startsWith(c.dialCode));
+			let number = '';
+			if (country) {
+				number = value.slice(country.dialCode.length);
+			} else if (value.startsWith('0')) {
+				// Assume Egypt
+				country = GCC_COUNTRIES.find((c) => c.code === 'EG');
+				number = value.slice(1);
+			}
+			if (country) {
+				setSelectedCountry(country);
+				setPhoneNumber(number);
+				setError(validateNumber(number, country));
+			}
+		} else {
+			setPhoneNumber('');
+			setError('');
+		}
 	}, [value]);
 
-	// Effect for validation, runs whenever the number or country changes
+	// Effect to emit the full number and validate
 	useEffect(() => {
-		if (phoneNumber.length === 0) {
-			setError(''); // Clear error if input is empty
-			return;
+		const fullNumber =
+			selectedCountry.code === 'EG' ? '0' + phoneNumber : selectedCountry.dialCode + phoneNumber;
+		if (onChange) {
+			onChange(fullNumber);
 		}
+		setError(validateNumber(phoneNumber, selectedCountry));
+	}, [selectedCountry, phoneNumber, onChange]);
 
-		let errorMessage = '';
-		if (phoneNumber.length < selectedCountry.minLength) {
-			errorMessage = `يجب أن يكون ${selectedCountry.minLength} أرقام`;
-		} else if (phoneNumber.length > selectedCountry.maxLength) {
-			errorMessage = `الرقم طويل جدًا`; // Keep it short, the number will be truncated anyway
+	const handleCountryChange = (countryCode: string) => {
+		const country = GCC_COUNTRIES.find((c) => c.code === countryCode);
+		if (country) {
+			setSelectedCountry(country);
+			setError(validateNumber(phoneNumber, country));
 		}
-		setError(errorMessage);
-	}, [phoneNumber, selectedCountry]);
+	};
 
-	// --- Event Handlers ---
-
-	// Wrapped in useCallback for performance optimization
-	const handleCountryChange = useCallback(
-		(countryCode: string) => {
-			const newCountry = GCC_COUNTRIES.find((c) => c.code === countryCode);
-			if (newCountry) {
-				setSelectedCountry(newCountry);
-				// When country changes, construct and emit the new full number
-				const fullNumber = newCountry.dialCode + phoneNumber;
-				onChange?.(fullNumber);
-			}
-		},
-		[phoneNumber, onChange]
-	);
-
-	// Wrapped in useCallback for performance optimization
-	const handlePhoneNumberChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const digitsOnly = e.target.value.replace(/\D/g, '');
-			// Enforce max length constraint
-			const newPhoneNumber = digitsOnly.slice(0, selectedCountry.maxLength);
-
-			setPhoneNumber(newPhoneNumber);
-			// Construct and emit the new full number on every change
-			const fullNumber = selectedCountry.dialCode + newPhoneNumber;
-			onChange?.(fullNumber);
-		},
-		[selectedCountry, onChange]
-	);
+	const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const digitsOnly = e.target.value.replace(/\D/g, '');
+		setPhoneNumber(digitsOnly);
+	};
 
 	return (
 		<div className={cn('space-y-2', className)}>
 			<div className="relative">
+				{/* Country Selector nested in input */}
 				<Select value={selectedCountry.code} onValueChange={handleCountryChange}>
-					<SelectTrigger className="absolute left-2 top-1/2 -translate-y-1/2 w-auto h-auto p-0 border-0 bg-transparent z-10 focus:ring-0 focus:ring-offset-0">
+					<SelectTrigger className="absolute left-2 top-1/2 -translate-y-1/2 w-auto h-auto p-0 border-0 bg-transparent z-10">
 						<SelectValue>
 							<div className="flex items-center space-x-1">
 								<span className="text-lg">{selectedCountry.flag}</span>
@@ -209,7 +167,7 @@ export const GccPhoneInput = ({ value, onChange, className }: GccPhoneInputProps
 					<SelectContent>
 						{GCC_COUNTRIES.map((country) => (
 							<SelectItem key={country.code} value={country.code}>
-								<div className="flex items-center space-x-2 text-right">
+								<div className="flex items-center space-x-2">
 									<span>{country.flag}</span>
 									<span>{country.nameAr}</span>
 									<span className="text-muted-foreground">{country.dialCode}</span>
@@ -219,16 +177,16 @@ export const GccPhoneInput = ({ value, onChange, className }: GccPhoneInputProps
 					</SelectContent>
 				</Select>
 
+				{/* Phone Number Input */}
 				<Input
 					type="tel"
-					dir="ltr" // Ensure phone number input is always Left-to-Right
 					value={phoneNumber}
 					onChange={handlePhoneNumberChange}
-					placeholder={`${'X'.repeat(selectedCountry.minLength)}`}
-					className={cn('pl-28 text-left', error && 'border-red-500 focus-visible:ring-red-500')}
+					placeholder={`مثال: ${'x'.repeat(selectedCountry.minLength)}`}
+					className={cn('pl-20', error && 'border-red-500 focus-visible:ring-red-500')}
 				/>
 			</div>
-
+			{/* Error Message Display */}
 			{error && <p className="text-sm text-red-500 font-medium">{error}</p>}
 		</div>
 	);
