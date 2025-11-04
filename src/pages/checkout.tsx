@@ -55,7 +55,7 @@ const CheckoutPage = () => {
 			const fetchCities = async () => {
 				try {
 					const response = await api.get(`v1/utilities/countries/${storeCountryId}/cities`);
-					setCities(response.data);
+					setCities(response.data.data || []);
 				} catch (error) {
 					console.error('Failed to fetch cities:', error);
 					toast({ title: 'خطأ', description: 'فشل في تحميل المدن' });
