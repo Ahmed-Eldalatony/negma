@@ -1,13 +1,14 @@
 import { Minus, Plus, Trash2, ArrowRight, ShoppingCart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
-import { useCartStore, useProductsStore } from '@/store';
+import { useCartStore } from '@/store';
+import { useProducts } from '@/hooks/useProducts';
 import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 
 export default function CartPage() {
 	const navigate = useNavigate();
 	const { cart, updateQuantity, removeFromCart } = useCartStore();
-	const { products, isLoading } = useProductsStore();
+	const { data: products, isLoading } = useProducts();
 
 	const cartItems = cart
 		.map((item) => {

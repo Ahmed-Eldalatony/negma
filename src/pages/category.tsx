@@ -5,8 +5,8 @@ import ProductCardSkeleton from '@/components/ProductCardSkeleton'; // Loading s
 import BottomNav from '@/components/BottomNav'; // Bottom navigation component
 import { Button } from '@/components/ui/button'; // UI button component
 import { useCategory } from '@/hooks/useCategory'; // Custom hook to fetch categories
-import { useProductsStore } from '@/store'; // Zustand store for products data
-import { useEffect } from 'react';
+import { useProductsByCategory } from '@/hooks/useProducts'; // React Query hook for products by category
+
 import type { Product } from '@/shared/mock-data';
 
 // Meta function for SEO - provides page title and description
@@ -23,22 +23,11 @@ export default function CategoryPage() {
 
 	// Fetch categories data using custom hook
 	const { categories, loading: categoriesLoading, error: categoriesError } = useCategory();
-	// Get products from global store
-	const {
-		categoryProducts,
-		isLoading: productsLoading,
-		fetchProductsByCategory,
-	} = useProductsStore();
+	// Get products by category using React Query
+	const { data: categoryProducts, isLoading: productsLoading } = useProductsByCategory(categoryId);
 
 	// Find the current category by ID
 	const category = categories?.find((c) => c.id.toString() === categoryId);
-
-	// Fetch products by category when component mounts or categoryId changes
-	useEffect(() => {
-		if (categoryId) {
-			fetchProductsByCategory(categoryId);
-		}
-	}, [categoryId, fetchProductsByCategory]);
 
 	// Transform products data to match ProductCard component props
 	const transformedProducts: Product[] = categoryProducts

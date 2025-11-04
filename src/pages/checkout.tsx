@@ -20,23 +20,8 @@ import {
 import { api } from '@/lib/api';
 import PaymentMethodPage from '@/components/PaymentMethodPage';
 import { GccPhoneInput } from '@/components/ui/phone-number-input';
-import { useCartStore, SUBDOMAIN } from '@/store';
-
-type Country = {
-	id: number;
-	name: string;
-	name_en: string;
-	code: string;
-	currency: {
-		id: number;
-		name: string;
-		currency: string;
-		rate_to_usd: string;
-		created_at: string;
-		updated_at: string;
-	};
-	logo: string;
-};
+import { useCartStore, useStoreCountryStore } from '@/store';
+import { useStore } from '@/hooks/useStoreData';
 
 type City = {
 	id: number;
@@ -47,8 +32,7 @@ type City = {
 // Define the validation schema with Zod
 const checkoutSchema = z.object({
 	fullName: z.string().min(3, { message: 'الاسم الكامل مطلوب' }),
-	country: z.string().min(1, { message: 'الدولة مطلوبة' }),
-	city: z.string().min(2, { message: 'المدينة مطلوبة' }),
+	city: z.string().min(1, { message: 'المدينة مطلوبة' }),
 	primaryPhone: z.string().optional(),
 	additionalPhone: z.string().optional(),
 	detailedAddress: z.string().min(10, { message: 'العنوان التفصيلي مطلوب' }),
@@ -58,41 +42,30 @@ const checkoutSchema = z.object({
 const CheckoutPage = () => {
 	const navigate = useNavigate();
 	const { toast } = useToast();
-	const [isSubmitting, setIsSubmitting] = useState(false);
+
 	const [showPayment, setShowPayment] = useState(false);
-	const [countries, setCountries] = useState<Country[]>([]);
 	const [cities, setCities] = useState<City[]>([]);
-	const [selectedCountry, setSelectedCountry] = useState<string>('');
-	const [selectedCountryCode, setSelectedCountryCode] = useState<string>('');
 	const { cart, clearCart } = useCartStore();
+	const { storeCountryId } = useStoreCountryStore();
+	// Ensure store data is loaded
+	useStore();
 
 	useEffect(() => {
-		const fetchCountries = async () => {
-			try {
-				const response = await api.get('v1/utilities/countries');
-				setCountries(response.data.data);
-			} catch (error) {
-				console.error('Failed to fetch countries:', error);
-			}
-		};
-		fetchCountries();
-	}, []);
-
-	useEffect(() => {
-		if (selectedCountry) {
+		if (storeCountryId) {
 			const fetchCities = async () => {
 				try {
-					const response = await api.get(`v1/utilities/countries/${selectedCountry}/cities`);
-					setCities(response.data.data);
+					const response = await api.get(`v1/utilities/countries/${storeCountryId}/cities`);
+					setCities(response.data);
 				} catch (error) {
 					console.error('Failed to fetch cities:', error);
+					toast({ title: 'خطأ', description: 'فشل في تحميل المدن' });
 				}
 			};
 			fetchCities();
 		} else {
 			setCities([]);
 		}
-	}, [selectedCountry]);
+	}, [storeCountryId, toast]);
 
 	const {
 		register,
@@ -105,7 +78,6 @@ const CheckoutPage = () => {
 		resolver: zodResolver(checkoutSchema),
 		defaultValues: {
 			fullName: '',
-			country: '',
 			city: '',
 			primaryPhone: '',
 			additionalPhone: '',
@@ -123,46 +95,29 @@ const CheckoutPage = () => {
 		[setValue]
 	);
 
-	const onSubmit = async (data: Record<string, unknown>) => {
-		setIsSubmitting(true);
-		try {
-			const items = cart.map((item) => ({
-				sku_id: parseInt(item.id),
-				quantity: item.quantity,
-			}));
-			const payload = {
-				payment_method: 'paymob',
-				items,
-				customer_information: {
-					customer_name: data.fullName as string,
-					customer_phone: data.primaryPhone as string,
-					customer_additional_phone: (data.additionalPhone as string) || undefined,
-					city_id: parseInt(data.city as string),
-					customer_address: data.detailedAddress as string,
-					customer_notes: (data.orderNotes as string) || undefined,
-				},
-			};
-			const response = await api.post(`v1/store/${SUBDOMAIN()}/checkout`, payload);
-			if (response.data.type === 'redirect') {
-				// window.location.href = response.data.redirect_url;
-				setShowPayment(true);
-			} else {
-			}
-			clearCart();
-			reset();
-		} catch {
-			toast({ title: 'خطأ', description: 'فشل في إرسال الطلب' });
-		} finally {
-			setIsSubmitting(false);
+	const onSubmit = () => {
+		if (cities.length === 0) {
+			toast({ title: 'خطأ', description: 'يرجى الانتظار حتى تحميل المدن' });
+			return;
 		}
+		// Show payment method selection
+		setShowPayment(true);
 	};
 
 	if (showPayment) {
 		return (
 			<PaymentMethodPage
-				onPaymentComplete={() => {
-					toast({ title: 'نجح الدفع', description: 'تم إتمام الطلب بنجاح' });
-					navigate('/orders');
+				checkoutData={watch()}
+				cart={cart}
+				onPaymentComplete={(redirectUrl) => {
+					if (redirectUrl) {
+						window.location.href = redirectUrl;
+					} else {
+						toast({ title: 'نجح الدفع', description: 'تم إتمام الطلب بنجاح' });
+						clearCart();
+						reset();
+						navigate('/orders');
+					}
 				}}
 			/>
 		);
@@ -197,41 +152,6 @@ const CheckoutPage = () => {
 									)}
 								</div>
 
-								{/* Country */}
-								<div className="relative">
-									<Label htmlFor="country" className="text-sm font-medium text-foreground mb-1 ">
-										الدولة
-									</Label>
-									<div className="relative">
-										<Select
-											dir="rtl"
-											value={selectedCountry}
-											onValueChange={(value) => {
-												setSelectedCountry(value);
-												setValue('country', value);
-												setValue('city', '');
-												// Find the country code for phone input
-												const country = countries.find((c) => c.id.toString() === value);
-												setSelectedCountryCode(country?.code || '');
-											}}
-										>
-											<SelectTrigger className={errors.country ? 'border-destructive' : ''}>
-												<SelectValue placeholder="اختر الدولة" />
-											</SelectTrigger>
-											<SelectContent>
-												{countries.map((country) => (
-													<SelectItem key={country.id} value={country.id.toString()}>
-														{country.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									</div>
-									{errors.country && (
-										<p className="mt-1 text-sm text-destructive ">{errors.country.message}</p>
-									)}
-								</div>
-
 								{/* City */}
 								<div className="relative">
 									<Label htmlFor="city" className="text-sm font-medium text-foreground mb-1 ">
@@ -242,12 +162,12 @@ const CheckoutPage = () => {
 											dir="rtl"
 											value={watch('city')}
 											onValueChange={(value) => setValue('city', value)}
-											disabled={!selectedCountry}
+											disabled={cities.length === 0}
 										>
 											<SelectTrigger className={errors.city ? 'border-destructive ' : ''}>
 												<SelectValue placeholder="اختر المدينة" />
 											</SelectTrigger>
-											<SelectContent>
+											<SelectContent dir="rtl">
 												{cities.map((city) => (
 													<SelectItem key={city.id} value={city.id.toString()}>
 														{city.name}
@@ -269,7 +189,7 @@ const CheckoutPage = () => {
 									<GccPhoneInput
 										value={watch('primaryPhone')}
 										onChange={handlePrimaryPhoneChange}
-										countryCode={selectedCountryCode}
+										countryCode=""
 									/>
 								</div>
 
@@ -281,7 +201,7 @@ const CheckoutPage = () => {
 									<GccPhoneInput
 										value={watch('additionalPhone')}
 										onChange={handleAdditionalPhoneChange}
-										countryCode={selectedCountryCode}
+										countryCode=""
 									/>
 								</div>
 
@@ -337,34 +257,8 @@ const CheckoutPage = () => {
 
 							{/* Submit Button */}
 							<div className="mt-6">
-								<Button type="submit" disabled={isSubmitting} className="w-full">
-									{isSubmitting ? (
-										<>
-											<svg
-												className="animate-spin -ml-1 mr-3 h-5 w-5"
-												xmlns="http://www.w3.org/2000/svg"
-												fill="none"
-												viewBox="0 0 24 24"
-											>
-												<circle
-													className="opacity-25"
-													cx="12"
-													cy="12"
-													r="10"
-													stroke="currentColor"
-													strokeWidth="4"
-												></circle>
-												<path
-													className="opacity-75"
-													fill="currentColor"
-													d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-												></path>
-											</svg>
-											جاري إرسال الطلب...
-										</>
-									) : (
-										'إرسال الطلب'
-									)}
+								<Button type="submit" disabled={cities.length === 0} className="w-full">
+									{cities.length === 0 ? 'جاري تحميل المدن...' : 'متابعة لاختيار طريقة الدفع'}
 								</Button>
 							</div>
 						</form>

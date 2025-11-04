@@ -1,9 +1,9 @@
 import ProductCard from '../ProductCard';
-import { useProductsStore } from '@/store';
+import { useProducts } from '@/hooks/useProducts';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function ProductCardExample() {
-	const { products, isLoading, error } = useProductsStore();
+	const { data: products, isLoading, error } = useProducts();
 
 	if (isLoading)
 		return (
@@ -11,7 +11,7 @@ export default function ProductCardExample() {
 				<Spinner size="lg" />
 			</div>
 		);
-	if (error) return <div>Error: {error}</div>;
+	if (error) return <div>Error: {error.message}</div>;
 	if (!products) return <div>No products available</div>;
 
 	return (

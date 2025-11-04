@@ -1,6 +1,7 @@
 import { ArrowRight, Heart } from 'lucide-react';
 import { Link } from 'react-router';
-import { useFavoritesStore, useProductsStore } from '@/store';
+import { useFavoritesStore } from '@/store';
+import { useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
 import ProductCardSkeleton from '@/components/ProductCardSkeleton';
 import BottomNav from '@/components/BottomNav';
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/button';
 
 export default function FavoritesPage() {
 	const { favorites } = useFavoritesStore();
-	const { products, isLoading } = useProductsStore();
+	const { data: products, isLoading } = useProducts();
 
 	const favoriteProducts = products
 		? products

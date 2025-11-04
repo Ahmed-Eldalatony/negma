@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 // import { useStoreDataStore } from '../store';
 import { api } from '../lib/api';
-import { SUBDOMAIN } from '@/store';
+import { SUBDOMAIN, useStoreCountryStore } from '@/store';
 
 interface Pixel {
 	id: string;
@@ -42,6 +42,7 @@ export const useStore = () => {
 	const [data, setData] = useState<StoreData | null>(null);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
+	const { setStoreCountryId } = useStoreCountryStore();
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -49,7 +50,12 @@ export const useStore = () => {
 				setLoading(true);
 				setError(null);
 				const res = await api.get(`v1/store/${SUBDOMAIN()}`);
-				setData(res.data.data);
+				const storeData = res.data.data;
+				setData(storeData);
+				// Cache the country_id
+				if (storeData?.settings?.country_id) {
+					setStoreCountryId(storeData.settings.country_id);
+				}
 			} catch (err) {
 				console.error('API error:', err);
 				setError(err instanceof Error ? err.message : 'An error occurred');
@@ -58,7 +64,7 @@ export const useStore = () => {
 			}
 		};
 		fetchData();
-	}, []);
+	}, [setStoreCountryId]);
 
 	return { storedData: data, loading, error };
 };

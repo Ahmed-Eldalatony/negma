@@ -8,9 +8,9 @@ import ProductCardSkeleton from '@/components/ProductCardSkeleton';
 import BottomNav from '@/components/BottomNav';
 import SearchFilter from '@/components/SearchFilter';
 import { Button } from '@/components/ui/button';
-import { useProductsStore } from '@/store';
+import { useProductsWithFilters } from '@/hooks/useProducts';
 import { useCategory } from '@/hooks/useCategory';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Product } from '@/shared/mock-data';
 
 // Meta function for SEO
@@ -34,11 +34,11 @@ export default function SearchPage() {
 
 	// Fetch data
 	const { categories } = useCategory();
-	const {
-		filteredProducts,
-		isLoading: productsLoading,
-		fetchProductsWithFilters,
-	} = useProductsStore();
+	const categoryId = selectedCategoryId === 'all' ? undefined : selectedCategoryId;
+	const { data: filteredProducts, isLoading: productsLoading } = useProductsWithFilters(
+		categoryId,
+		searchText
+	);
 
 	// Update URL when search/filter changes
 	const updateSearchParams = (query: string, category: string) => {
@@ -51,15 +51,7 @@ export default function SearchPage() {
 	// Handle search input
 	const handleSearch = () => {
 		updateSearchParams(searchText, selectedCategoryId);
-		const categoryId = selectedCategoryId === 'all' ? undefined : selectedCategoryId;
-		fetchProductsWithFilters(categoryId, searchText || undefined);
 	};
-
-	// Fetch products when component mounts or URL params change
-	useEffect(() => {
-		const categoryId = initialCategory === 'all' ? undefined : initialCategory;
-		fetchProductsWithFilters(categoryId, initialQuery || undefined);
-	}, [initialQuery, initialCategory, fetchProductsWithFilters]);
 
 	// Transform products data to match ProductCard component props
 	const transformedProducts: Product[] = filteredProducts

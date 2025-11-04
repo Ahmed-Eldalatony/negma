@@ -27,7 +27,15 @@ type PaymentMethod = {
 	logo: string;
 };
 
-const PaymentMethodPage = ({ onPaymentComplete }: { onPaymentComplete: () => void }) => {
+const PaymentMethodPage = ({
+	onPaymentComplete,
+	checkoutData,
+	cart,
+}: {
+	onPaymentComplete: (redirectUrl?: string) => void;
+	checkoutData: Record<string, unknown>;
+	cart: { id: string; quantity: number }[];
+}) => {
 	const [selectedMethod, setSelectedMethod] = useState<string>('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -45,16 +53,39 @@ const PaymentMethodPage = ({ onPaymentComplete }: { onPaymentComplete: () => voi
 		fetchPaymentMethods();
 	}, []);
 
-	const onSubmit = () => {
+	const onSubmit = async () => {
 		if (!selectedMethod) return;
 
 		setIsSubmitting(true);
-		// Simulate payment processing
-		setTimeout(() => {
-			console.log('Payment completed with method:', selectedMethod);
+		try {
+			const items = cart.map((item) => ({
+				sku_id: parseInt(item.id),
+				quantity: item.quantity,
+			}));
+			const payload = {
+				payment_method: selectedMethod,
+				items,
+				customer_information: {
+					customer_name: checkoutData.fullName as string,
+					customer_phone: checkoutData.primaryPhone as string,
+					customer_additional_phone: (checkoutData.additionalPhone as string) || undefined,
+					city_id: parseInt(checkoutData.city as string),
+					customer_address: checkoutData.detailedAddress as string,
+					customer_notes: (checkoutData.orderNotes as string) || undefined,
+				},
+			};
+			const response = await api.post(`v1/store/${SUBDOMAIN()}/checkout`, payload);
+			if (response.data.type === 'redirect') {
+				onPaymentComplete(response.data.redirect_url);
+			} else {
+				setShowSuccessDialog(true);
+			}
+		} catch (error) {
+			console.error('Checkout failed:', error);
+			// Handle error - maybe show error message
+		} finally {
 			setIsSubmitting(false);
-			setShowSuccessDialog(true);
-		}, 2000);
+		}
 	};
 
 	const handleCheckOrder = () => {

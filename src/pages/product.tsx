@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import {
 	Star,
@@ -35,7 +35,8 @@ import {
 	AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useFavoritesStore, useCartStore, useProductsStore } from '@/store';
+import { useFavoritesStore, useCartStore } from '@/store';
+import { useProduct } from '@/hooks/useProducts';
 // TODO: get the right type instead of any
 export function meta() {
 	return [{ title: 'منتج - نجمة' }, { name: 'description', content: 'تفاصيل المنتج' }];
@@ -46,13 +47,7 @@ export default function ProductPage() {
 	const navigate = useNavigate();
 	const productId = params.id || '1';
 
-	const { currentProduct, fetchProduct, isLoading } = useProductsStore();
-
-	useEffect(() => {
-		if (productId) {
-			fetchProduct(productId);
-		}
-	}, [productId, fetchProduct]);
+	const { data: currentProduct, isLoading } = useProduct(productId);
 
 	const product = currentProduct
 		? {

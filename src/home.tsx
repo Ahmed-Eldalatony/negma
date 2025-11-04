@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Menu, Rocket, Asterisk } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import HeroBanner from '@/components/HeroBanner';
@@ -12,7 +12,7 @@ import SearchFilter from '@/components/SearchFilter';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useProductsStore } from './store';
+import { useProducts } from '@/hooks/useProducts';
 import { useStore } from '@/hooks/useStoreData';
 import { useCategory } from '@/hooks/useCategory';
 // TODO: look for how to use metdata of the fetched data
@@ -27,7 +27,7 @@ export default function Home() {
 	const navigate = useNavigate();
 	const { storedData, error: storeError } = useStore();
 	const { categories, loading: categoriesLoading, error: categoriesError } = useCategory();
-	const { products, isLoading: productsLoading, fetchProducts } = useProductsStore();
+	const { data: products, isLoading: productsLoading } = useProducts();
 
 	// Search and filter state
 	const [searchText, setSearchText] = useState('');
@@ -43,24 +43,6 @@ export default function Home() {
 	};
 
 	// Add state to track if data has been fetched to prevent infinite loops
-	const [hasFetched, setHasFetched] = useState({
-		products: false,
-	});
-
-	useEffect(() => {
-		if (!products && !productsLoading && !hasFetched.products) {
-			fetchProducts().then(() => {
-				setHasFetched((prev) => ({ ...prev, products: true }));
-			});
-		}
-	}, [products, productsLoading, fetchProducts, hasFetched.products]);
-
-	// Reset the fetched state when navigating to allow refetching
-	useEffect(() => {
-		return () => {
-			setHasFetched({ products: false });
-		};
-	}, []);
 
 	if (storeError) {
 		console.error('Error loading store data:', storeError);
