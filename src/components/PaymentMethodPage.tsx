@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,24 +18,32 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { api } from '@/lib/api';
+import { SUBDOMAIN } from '@/store';
 
 type PaymentMethod = {
-	id: number;
 	name: string;
-	is_active: boolean;
+	code: string;
+	logo: string;
 };
-
-// Mock payment methods
-const MOCK_PAYMENT_METHODS: PaymentMethod[] = [
-	{ id: 1, name: 'الدفع عند الاستلام', is_active: true },
-	{ id: 2, name: 'بطاقة الائتمان', is_active: true },
-	{ id: 3, name: 'تحويل بنكي', is_active: true },
-];
 
 const PaymentMethodPage = ({ onPaymentComplete }: { onPaymentComplete: () => void }) => {
 	const [selectedMethod, setSelectedMethod] = useState<string>('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+	const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+
+	useEffect(() => {
+		const fetchPaymentMethods = async () => {
+			try {
+				const response = await api.get(`v1/store/${SUBDOMAIN()}/payment-methods`);
+				setPaymentMethods(response.data);
+			} catch (error) {
+				console.error('Failed to fetch payment methods:', error);
+			}
+		};
+		fetchPaymentMethods();
+	}, []);
 
 	const onSubmit = () => {
 		if (!selectedMethod) return;
@@ -73,8 +81,8 @@ const PaymentMethodPage = ({ onPaymentComplete }: { onPaymentComplete: () => voi
 										<SelectValue placeholder="اختر طريقة الدفع" />
 									</SelectTrigger>
 									<SelectContent>
-										{MOCK_PAYMENT_METHODS.filter((m) => m.is_active).map((method) => (
-											<SelectItem key={method.id} value={method.id.toString()}>
+										{paymentMethods.map((method) => (
+											<SelectItem key={method.code} value={method.code}>
 												{method.name}
 											</SelectItem>
 										))}

@@ -20,6 +20,7 @@ import {
 import { api } from '@/lib/api';
 import PaymentMethodPage from '@/components/PaymentMethodPage';
 import { GccPhoneInput } from '@/components/ui/phone-number-input';
+import { useCartStore, SUBDOMAIN } from '@/store';
 
 type Country = {
 	id: number;
@@ -63,6 +64,7 @@ const CheckoutPage = () => {
 	const [cities, setCities] = useState<City[]>([]);
 	const [selectedCountry, setSelectedCountry] = useState<string>('');
 	const [selectedCountryCode, setSelectedCountryCode] = useState<string>('');
+	const { cart, clearCart } = useCartStore();
 
 	useEffect(() => {
 		const fetchCountries = async () => {
@@ -121,15 +123,38 @@ const CheckoutPage = () => {
 		[setValue]
 	);
 
-	const onSubmit = (data: Record<string, unknown>) => {
+	const onSubmit = async (data: Record<string, unknown>) => {
 		setIsSubmitting(true);
-		// Simulate API call
-		setTimeout(() => {
-			console.log('Order data:', data);
-			setIsSubmitting(false);
-			setShowPayment(true);
+		try {
+			const items = cart.map((item) => ({
+				sku_id: parseInt(item.id),
+				quantity: item.quantity,
+			}));
+			const payload = {
+				payment_method: 'paymob',
+				items,
+				customer_information: {
+					customer_name: data.fullName as string,
+					customer_phone: data.primaryPhone as string,
+					customer_additional_phone: (data.additionalPhone as string) || undefined,
+					city_id: parseInt(data.city as string),
+					customer_address: data.detailedAddress as string,
+					customer_notes: (data.orderNotes as string) || undefined,
+				},
+			};
+			const response = await api.post(`v1/store/${SUBDOMAIN()}/checkout`, payload);
+			if (response.data.type === 'redirect') {
+				// window.location.href = response.data.redirect_url;
+				setShowPayment(true);
+			} else {
+			}
+			clearCart();
 			reset();
-		}, 2000);
+		} catch {
+			toast({ title: 'خطأ', description: 'فشل في إرسال الطلب' });
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	if (showPayment) {
