@@ -112,7 +112,7 @@ export default function CartPage() {
 							<img src={item.image} alt={item.name} className="h-20 w-20 rounded-md object-cover" />
 							<div className=" w-full flex  flex-wrap justify-between">
 								<h3 className="mb-1 text-start text-sm font-medium">{item.name}</h3>
-								<p className="text-primary text-start font-bold">
+								<p className="text-black text-start font-bold">
 									{currency
 										? formatPrice(item.convertedPrice, currency.currency)
 										: `${item.price} ريال`}
@@ -155,7 +155,7 @@ export default function CartPage() {
 				<div className="bg-muted rounded-lg p-4">
 					<div className="mb-2 flex items-center justify-between">
 						<span className="font-medium">المجموع الكلي:</span>
-						<span className="text-primary text-lg font-bold">
+						<span className="text-black text-lg font-bold">
 							{currency ? formatPrice(total, currency.currency) : `${total.toFixed(2)} ريال`}
 						</span>
 					</div>
