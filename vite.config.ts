@@ -12,7 +12,6 @@ export default defineConfig({
 		},
 	},
 	server: {
-		historyApiFallback: true,
 		proxy: {
 			'/api': {
 				target: 'https://boddasaad.me',
