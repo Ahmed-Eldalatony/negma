@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}</content>
+</xai:function_call">  
+<xai:function_call name="bash">
+<parameter name="command">git add vercel.json
