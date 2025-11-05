@@ -20,6 +20,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { api } from '@/lib/api';
 import { SUBDOMAIN } from '@/store';
+import { useProducts } from '@/hooks/useProducts';
+import { useCurrency } from '@/hooks/useCurrency';
+import { convertPrice, formatPrice } from '@/lib/utils';
 
 type PaymentMethod = {
 	name: string;
@@ -40,6 +43,26 @@ const PaymentMethodPage = ({
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 	const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+	const { data: products } = useProducts();
+	const { currency } = useCurrency();
+
+	const cartItems = cart
+		.map((item) => {
+			const product = products?.find((p) => p.id.toString() === item.id);
+			if (!product) return null;
+			const usdPrice = parseFloat(product.prices[0]?.price_in_usd || '0');
+			const convertedPrice = currency ? convertPrice(usdPrice, currency.rate_to_usd) : usdPrice;
+			return {
+				id: item.id,
+				quantity: item.quantity,
+				name: product.name,
+				price: usdPrice,
+				convertedPrice,
+			};
+		})
+		.filter((item) => item !== null);
+
+	const total = cartItems.reduce((sum, item) => sum + item.convertedPrice * item.quantity, 0);
 
 	useEffect(() => {
 		const fetchPaymentMethods = async () => {
@@ -126,7 +149,9 @@ const PaymentMethodPage = ({
 						<div className="mt-6 pt-6 border-t border-border">
 							<div className="flex justify-between items-center">
 								<span className="text-lg font-medium text-foreground">المجموع:</span>
-								<span className="text-xl font-bold text-foreground">$125.50</span>
+								<span className="text-xl font-bold text-foreground">
+									{currency ? formatPrice(total, currency.currency) : `$${total.toFixed(2)}`}
+								</span>
 							</div>
 						</div>
 

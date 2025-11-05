@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route } from 'react-router';
 import ProductPage from './pages/product';
 import CategoryPage from './pages/category';
 import SearchPage from './pages/search';
-import FavoritesPage from './pages/favorites';
+
 import CartPage from './pages/cart';
 import CheckoutPage from './pages/checkout';
 import OrdersPage from './pages/orders';
@@ -17,9 +17,10 @@ import './App.css';
 import Home from './home';
 
 import Layout from './layouts/Layouts';
-import { ThemeProvider } from './context/theme-provider';
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useStore } from './hooks/useStoreData';
+import AccentColorSetter from './components/AccentColorSetter';
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -38,22 +39,21 @@ function InnerApp() {
 
 	return (
 		<BrowserRouter>
-			<ThemeProvider>
-				<Layout>
-					<Routes>
-						<Route index element={<Home />} />
-						<Route path="product/:id" element={<ProductPage />} />
-						<Route path="categories" element={<CategoriesPage />} />
-						<Route path="category/:id" element={<CategoryPage />} />
-						<Route path="search" element={<SearchPage />} />
-						<Route path="favorites" element={<FavoritesPage />} />
-						<Route path="cart" element={<CartPage />} />
-						<Route path="checkout" element={<CheckoutPage />} />
-						<Route path="orders" element={<OrdersPage />} />
-						<Route path="*" element={<NotFoundPage />} />
-					</Routes>
-				</Layout>
-			</ThemeProvider>
+			<AccentColorSetter />
+			<Layout>
+				<Routes>
+					<Route index element={<Home />} />
+					<Route path="product/:id" element={<ProductPage />} />
+					<Route path="categories" element={<CategoriesPage />} />
+					<Route path="category/:id" element={<CategoryPage />} />
+					<Route path="search" element={<SearchPage />} />
+
+					<Route path="cart" element={<CartPage />} />
+					<Route path="checkout" element={<CheckoutPage />} />
+					<Route path="orders" element={<OrdersPage />} />
+					<Route path="*" element={<NotFoundPage />} />
+				</Routes>
+			</Layout>
 		</BrowserRouter>
 	);
 }

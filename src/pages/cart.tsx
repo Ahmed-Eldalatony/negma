@@ -2,6 +2,8 @@ import { Minus, Plus, Trash2, ArrowRight, ShoppingCart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { useCartStore } from '@/store';
 import { useProducts } from '@/hooks/useProducts';
+import { useCurrency } from '@/hooks/useCurrency';
+import { convertPrice, formatPrice } from '@/lib/utils';
 import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 
@@ -9,22 +11,26 @@ export default function CartPage() {
 	const navigate = useNavigate();
 	const { cart, updateQuantity, removeFromCart } = useCartStore();
 	const { data: products, isLoading } = useProducts();
+	const { currency } = useCurrency();
 
 	const cartItems = cart
 		.map((item) => {
 			const product = products?.find((p) => p.id.toString() === item.id);
 			if (!product) return null;
+			const usdPrice = parseFloat(product.prices[0]?.price_in_usd || '0');
+			const convertedPrice = currency ? convertPrice(usdPrice, currency.rate_to_usd) : usdPrice;
 			return {
 				id: item.id,
 				quantity: item.quantity,
 				name: product.name,
 				image: product.media[0]?.url || '',
-				price: parseFloat(product.prices[0]?.price_in_usd || '0'),
+				price: usdPrice,
+				convertedPrice,
 			};
 		})
 		.filter((item) => item !== null);
 
-	const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+	const total = cartItems.reduce((sum, item) => sum + item.convertedPrice * item.quantity, 0);
 
 	if (isLoading) {
 		return (
@@ -106,7 +112,11 @@ export default function CartPage() {
 							<img src={item.image} alt={item.name} className="h-20 w-20 rounded-md object-cover" />
 							<div className=" w-full flex  flex-wrap justify-between">
 								<h3 className="mb-1 text-start text-sm font-medium">{item.name}</h3>
-								<p className="text-primary text-start font-bold">{item.price} ريال</p>
+								<p className="text-primary text-start font-bold">
+									{currency
+										? formatPrice(item.convertedPrice, currency.currency)
+										: `${item.price} ريال`}
+								</p>
 								<div className="mt-2 w-full flex items-center justify-between">
 									<div className="flex  items-center gap-2">
 										<Button
@@ -145,7 +155,9 @@ export default function CartPage() {
 				<div className="bg-muted rounded-lg p-4">
 					<div className="mb-2 flex items-center justify-between">
 						<span className="font-medium">المجموع الكلي:</span>
-						<span className="text-primary text-lg font-bold">{total.toFixed(2)} ريال</span>
+						<span className="text-primary text-lg font-bold">
+							{currency ? formatPrice(total, currency.currency) : `${total.toFixed(2)} ريال`}
+						</span>
 					</div>
 					{/* <div className="text-muted-foreground text-xs">الشحن مجاني على الطلبات فوق 50 ريال</div> */}
 				</div>

@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Heart } from 'lucide-react';
 import type { Product } from '@/shared/mock-data';
 import { useFavoritesStore } from '@/store';
+import { useCurrency } from '@/hooks/useCurrency';
+import { convertPrice, formatPrice } from '@/lib/utils';
 
 interface ProductCardProps {
 	product: Product;
@@ -10,6 +12,25 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
 	const { toggleFavorite, isFavorite } = useFavoritesStore();
+	const { currency } = useCurrency();
+
+	const convertedPrice = currency
+		? convertPrice(product.price, currency.rate_to_usd)
+		: product.price;
+	const convertedOriginalPrice =
+		product.originalPrice && currency
+			? convertPrice(product.originalPrice, currency.rate_to_usd)
+			: product.originalPrice;
+
+	const priceDisplay = currency
+		? formatPrice(convertedPrice, currency.currency)
+		: `$${product.price.toFixed(2)}`;
+	const originalPriceDisplay =
+		convertedOriginalPrice && currency
+			? formatPrice(convertedOriginalPrice, currency.currency)
+			: product.originalPrice
+				? `$${product.originalPrice.toFixed(2)}`
+				: null;
 
 	const handleFavoriteClick = (e: React.MouseEvent) => {
 		e.preventDefault();
@@ -60,16 +81,16 @@ export default function ProductCard({ product }: ProductCardProps) {
 					</h3>
 
 					<div className="flex items-center gap-2">
-						{product.originalPrice && (
+						{originalPriceDisplay && (
 							<span
 								className="text-muted-foreground text-xs line-through"
 								data-testid={`text-original-price-${product.id}`}
 							>
-								${product.originalPrice.toFixed(2)}
+								{originalPriceDisplay}
 							</span>
 						)}
 						<span className="text-base font-bold" data-testid={`text-price-${product.id}`}>
-							${product.price.toFixed(2)}
+							{priceDisplay}
 						</span>
 					</div>
 

@@ -1,4 +1,4 @@
-import { Home, Grid3x3, ShoppingCart, Heart } from 'lucide-react';
+import { Home, Grid3x3, ShoppingCart } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { useCartStore } from '@/store';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +7,6 @@ const navItems = [
 	{ id: 'home', path: '/', icon: Home, labelAr: 'الرئيسية' },
 	{ id: 'categories', path: '/categories', icon: Grid3x3, labelAr: 'التصنيفات' },
 	{ id: 'cart', path: '/cart', icon: ShoppingCart, labelAr: 'السلة' },
-	{ id: 'favorites', path: '/favorites', icon: Heart, labelAr: 'المفضلة' },
 ];
 
 export default function BottomNav() {
@@ -30,7 +29,7 @@ export default function BottomNav() {
 							<div className="relative flex min-w-[60px] flex-col items-center gap-1 px-3 py-2">
 								<div className="relative">
 									<Icon
-										className={`h-5 w-5 ${isActive ? 'fill-current' : ''}`}
+										className={`h-5 w-5 ${isActive ? 'fill-current text-primary' : ''}`}
 										strokeWidth={isActive ? 2.5 : 2}
 									/>
 									{item.id === 'cart' && cartCount > 0 && (
@@ -42,9 +41,7 @@ export default function BottomNav() {
 										</Badge>
 									)}
 								</div>
-								<span
-									className={`text-xs ${isActive ? 'font-bold' : 'font-normal'}`}
-								>
+								<span className={`text-xs ${isActive ? 'font-bold text-primary' : 'font-normal'}`}>
 									{item.labelAr}
 								</span>
 							</div>

@@ -7,7 +7,7 @@ import CategoryCardSkeleton from '@/components/CategoryCardSkeleton';
 import ProductCard from '@/components/ProductCard';
 import ProductCardSkeleton from '@/components/ProductCardSkeleton';
 import BottomNav from '@/components/BottomNav';
-import { ThemeSwitcher } from '@/components/ThemeSwitcher';
+
 import SearchFilter from '@/components/SearchFilter';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -15,6 +15,8 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useProducts } from '@/hooks/useProducts';
 import { useStore } from '@/hooks/useStoreData';
 import { useCategory } from '@/hooks/useCategory';
+import { useCurrency } from '@/hooks/useCurrency';
+import { formatPrice } from '@/lib/utils';
 // TODO: look for how to use metdata of the fetched data
 export function meta() {
 	return [
@@ -28,6 +30,7 @@ export default function Home() {
 	const { storedData, error: storeError } = useStore();
 	const { categories, loading: categoriesLoading, error: categoriesError } = useCategory();
 	const { data: products, isLoading: productsLoading } = useProducts();
+	const { currency } = useCurrency();
 
 	// Search and filter state
 	const [searchText, setSearchText] = useState('');
@@ -47,7 +50,7 @@ export default function Home() {
 	if (storeError) {
 		console.error('Error loading store data:', storeError);
 	}
-
+	console.log('====', storedData);
 	return (
 		<div className="mb-20 min-h-screen">
 			{/* Top Banner */}
@@ -55,7 +58,8 @@ export default function Home() {
 				<div className="flex items-center justify-center gap-2 text-sm font-medium">
 					<Rocket className="h-4 w-4" />
 					<span data-testid="text-banner-promo bg-black">
-						شحن مجاني على الطلبات التي تزيد عن 50$
+						شحن مجاني على الطلبات التي تزيد عن{' '}
+						{currency ? formatPrice(50, currency.currency) : '$50'}
 					</span>
 				</div>
 			</div>
@@ -63,6 +67,16 @@ export default function Home() {
 			{/* Header with Logo */}
 			<header className="bg-background sticky top-0 z-40 border-b py-3 px-4">
 				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2">
+						{storedData?.logo ? (
+							<img src={storedData.logo} alt="Logo" className="h-12 w-12" />
+						) : (
+							<Asterisk className="h-6 w-6" />
+						)}
+						<span className="text-xl font-bold" data-testid="text-logo">
+							{storedData?.settings.name || 'نجمة'}
+						</span>
+					</div>
 					<div className="flex items-center gap-2">
 						<Sheet>
 							<SheetTrigger asChild>
@@ -84,17 +98,6 @@ export default function Home() {
 								</div>
 							</SheetContent>
 						</Sheet>
-						<ThemeSwitcher />
-					</div>
-					<div className="flex items-center gap-2">
-						<span className="text-xl font-bold" data-testid="text-logo">
-							{storedData?.settings.name || 'نجمة'}
-						</span>
-						{storedData?.logo ? (
-							<img src={storedData.logo} alt="Logo" className="h-12 w-12" />
-						) : (
-							<Asterisk className="h-6 w-6" />
-						)}
 					</div>
 				</div>
 				{/* Search and filter bar */}

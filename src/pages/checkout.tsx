@@ -22,6 +22,9 @@ import PaymentMethodPage from '@/components/PaymentMethodPage';
 import { GccPhoneInput } from '@/components/ui/phone-number-input';
 import { useCartStore, useStoreCountryStore } from '@/store';
 import { useStore } from '@/hooks/useStoreData';
+import { useProducts } from '@/hooks/useProducts';
+import { useCurrency } from '@/hooks/useCurrency';
+import { convertPrice, formatPrice } from '@/lib/utils';
 
 type City = {
 	id: number;
@@ -47,6 +50,8 @@ const CheckoutPage = () => {
 	const [cities, setCities] = useState<City[]>([]);
 	const { cart, clearCart } = useCartStore();
 	const { storeCountryId } = useStoreCountryStore();
+	const { data: products } = useProducts();
+	const { currency } = useCurrency();
 	// Ensure store data is loaded
 	useStore();
 
@@ -94,6 +99,24 @@ const CheckoutPage = () => {
 		(value: string) => setValue('additionalPhone', value),
 		[setValue]
 	);
+
+	const cartItems = cart
+		.map((item) => {
+			const product = products?.find((p) => p.id.toString() === item.id);
+			if (!product) return null;
+			const usdPrice = parseFloat(product.prices[0]?.price_in_usd || '0');
+			const convertedPrice = currency ? convertPrice(usdPrice, currency.rate_to_usd) : usdPrice;
+			return {
+				id: item.id,
+				quantity: item.quantity,
+				name: product.name,
+				price: usdPrice,
+				convertedPrice,
+			};
+		})
+		.filter((item) => item !== null);
+
+	const total = cartItems.reduce((sum, item) => sum + item.convertedPrice * item.quantity, 0);
 
 	const onSubmit = () => {
 		if (cities.length === 0) {
@@ -251,7 +274,9 @@ const CheckoutPage = () => {
 									<div className="flex items-center">
 										<span className="text-lg font-medium text-foreground">المجموع:</span>
 									</div>
-									<span className="text-xl font-bold text-foreground">$125.50</span>
+									<span className="text-xl font-bold text-foreground">
+										{currency ? formatPrice(total, currency.currency) : `$${total.toFixed(2)}`}
+									</span>
 								</div>
 							</div>
 
