@@ -1,5 +1,6 @@
 // src/store.ts
 import { create } from 'zustand';
+import { pixelTracker } from './lib/pixelTracking';
 
 export const SUBDOMAIN = () => {
 	// const parts = window.location.hostname;
@@ -154,6 +155,12 @@ export const useCartStore = create<{
 					newCart = [...state.cart, { id: productId, quantity }];
 				}
 				saveToStorage(newCart);
+				// Track add to cart event
+				pixelTracker.trackEventForAll('AddToCart', {
+					content_ids: [productId],
+					quantity,
+					content_type: 'product',
+				});
 				return { cart: newCart };
 			}),
 		removeFromCart: (productId: string) =>

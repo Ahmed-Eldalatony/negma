@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import {
 	Star,
@@ -39,6 +39,7 @@ import { useCartStore } from '@/store';
 import { useProduct } from '@/hooks/useProducts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { convertPrice, formatPrice } from '@/lib/utils';
+import { pixelTracker } from '@/lib/pixelTracking';
 // TODO: get the right type instead of any
 export function meta() {
 	return [{ title: 'منتج - نجمة' }, { name: 'description', content: 'تفاصيل المنتج' }];
@@ -50,6 +51,15 @@ export default function ProductPage() {
 	const productId = params.id || '1';
 
 	const { data: currentProduct, isLoading } = useProduct(productId);
+
+	useEffect(() => {
+		if (currentProduct) {
+			pixelTracker.trackEventForAll('ViewContent', {
+				content_ids: [currentProduct.id.toString()],
+				content_type: 'product',
+			});
+		}
+	}, [currentProduct]);
 
 	let product = null;
 	if (currentProduct) {

@@ -25,6 +25,7 @@ import { useStore } from '@/hooks/useStoreData';
 import { useProducts } from '@/hooks/useProducts';
 import { useCurrency } from '@/hooks/useCurrency';
 import { convertPrice, formatPrice } from '@/lib/utils';
+import { pixelTracker } from '@/lib/pixelTracking';
 
 type City = {
 	id: number;
@@ -136,6 +137,12 @@ const CheckoutPage = () => {
 					if (redirectUrl) {
 						window.location.href = redirectUrl;
 					} else {
+						// Track purchase
+						pixelTracker.trackPurchaseForAll(
+							total,
+							currency?.currency || 'USD',
+							cart.map((item) => item.id)
+						);
 						toast({ title: 'نجح الدفع', description: 'تم إتمام الطلب بنجاح' });
 						clearCart();
 						reset();

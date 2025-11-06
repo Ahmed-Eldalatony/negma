@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router';
 // import { Bsdge } from '@/components/ui/badge';
 // // import { useCounterStore } from './store';
 // // import { useTranslation } from 'react-i18next';
@@ -21,6 +21,8 @@ import Layout from './layouts/Layouts';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useStore } from './hooks/useStoreData';
 import AccentColorSetter from './components/AccentColorSetter';
+import { pixelTracker } from './lib/pixelTracking';
+import { useEffect } from 'react';
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -35,10 +37,25 @@ const queryClient = new QueryClient({
 });
 
 function InnerApp() {
-	useStore();
+	const { storedData } = useStore();
+	const location = useLocation();
+
+	useEffect(() => {
+		if (storedData?.settings?.pixel) {
+			pixelTracker.initializePixels(storedData.settings.pixel);
+		}
+	}, [storedData]);
+
+	useEffect(() => {
+		if (storedData?.settings?.pixel) {
+			storedData.settings.pixel.forEach((pixel) => {
+				pixelTracker.trackPageView(pixel.type, location.pathname);
+			});
+		}
+	}, [location.pathname, storedData]);
 
 	return (
-		<BrowserRouter>
+		<>
 			<AccentColorSetter />
 			<Layout>
 				<Routes>
@@ -54,14 +71,16 @@ function InnerApp() {
 					<Route path="*" element={<NotFoundPage />} />
 				</Routes>
 			</Layout>
-		</BrowserRouter>
+		</>
 	);
 }
 
 function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
-			<InnerApp />
+			<BrowserRouter>
+				<InnerApp />
+			</BrowserRouter>
 		</QueryClientProvider>
 	);
 }

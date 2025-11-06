@@ -50,7 +50,7 @@ export default function Home() {
 	if (storeError) {
 		console.error('Error loading store data:', storeError);
 	}
-	console.log('====', storedData);
+	console.log('====', storedData?.settings.pixel[0].id);
 	return (
 		<div className="mb-20 min-h-screen">
 			{/* Top Banner */}
