@@ -141,10 +141,9 @@ export const GccPhoneInput = ({ value, onChange, className, countryCode }: GccPh
 
 	// Effect to emit the full number and validate
 	useEffect(() => {
-		const fullNumber =
-			selectedCountry.code === 'EG' ? '0' + phoneNumber : selectedCountry.dialCode + phoneNumber;
+		// Return just the phone number digits for API compatibility
 		if (onChange) {
-			onChange(fullNumber);
+			onChange(phoneNumber);
 		}
 		setError(validateNumber(phoneNumber, selectedCountry));
 	}, [selectedCountry, phoneNumber, onChange]);

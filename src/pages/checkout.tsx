@@ -36,6 +36,7 @@ type City = {
 // Define the validation schema with Zod
 const checkoutSchema = z.object({
 	fullName: z.string().min(3, { message: 'الاسم الكامل مطلوب' }),
+	email: z.string().email({ message: 'البريد الإلكتروني غير صحيح' }),
 	city: z.string().min(1, { message: 'المدينة مطلوبة' }),
 	primaryPhone: z.string().optional(),
 	additionalPhone: z.string().optional(),
@@ -84,6 +85,7 @@ const CheckoutPage = () => {
 		resolver: zodResolver(checkoutSchema),
 		defaultValues: {
 			fullName: '',
+			email: '',
 			city: '',
 			primaryPhone: '',
 			additionalPhone: '',
@@ -179,6 +181,25 @@ const CheckoutPage = () => {
 									</div>
 									{errors.fullName && (
 										<p className="mt-1 text-sm text-destructive">{errors.fullName.message}</p>
+									)}
+								</div>
+
+								{/* Email */}
+								<div className="relative">
+									<Label htmlFor="email" className="text-sm font-medium text-foreground mb-1">
+										البريد الإلكتروني
+									</Label>
+									<div className="relative">
+										<Input
+											type="email"
+											id="email"
+											className={errors.email ? 'border-destructive ' : ''}
+											placeholder="أدخل بريدك الإلكتروني"
+											{...register('email')}
+										/>
+									</div>
+									{errors.email && (
+										<p className="mt-1 text-sm text-destructive">{errors.email.message}</p>
 									)}
 								</div>
 

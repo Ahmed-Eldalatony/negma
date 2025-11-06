@@ -3,13 +3,6 @@ import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
-import {
 	AlertDialog,
 	AlertDialogAction,
 	AlertDialogContent,
@@ -77,7 +70,40 @@ const PaymentMethodPage = ({
 	}, []);
 
 	const onSubmit = async () => {
-		if (!selectedMethod) return;
+		if (!selectedMethod) {
+			alert('يرجى اختيار طريقة الدفع');
+			return;
+		}
+
+		// Validate required fields
+		if (
+			!checkoutData.fullName ||
+			!checkoutData.email ||
+			!checkoutData.city ||
+			!checkoutData.detailedAddress
+		) {
+			alert('يرجى التأكد من ملء جميع الحقول المطلوبة');
+			return;
+		}
+
+		// Validate email format
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(checkoutData.email as string)) {
+			alert('يرجى إدخال بريد إلكتروني صحيح');
+			return;
+		}
+
+		// Validate city is a number
+		const cityId = parseInt(checkoutData.city as string);
+		if (isNaN(cityId)) {
+			alert('خطأ في بيانات المدينة');
+			return;
+		}
+
+		if (cart.length === 0) {
+			alert('السلة فارغة');
+			return;
+		}
 
 		setIsSubmitting(true);
 		try {
@@ -85,19 +111,36 @@ const PaymentMethodPage = ({
 				sku_id: parseInt(item.id),
 				quantity: item.quantity,
 			}));
+			const customerInfo: Record<string, unknown> = {
+				customer_name: checkoutData.fullName as string,
+				customer_email: checkoutData.email as string,
+				customer_city: cityId,
+				customer_address: checkoutData.detailedAddress as string,
+			};
+
+			// Only add optional fields if they have values
+			if (checkoutData.primaryPhone) {
+				customerInfo.customer_phone = checkoutData.primaryPhone as string;
+			}
+			if (checkoutData.additionalPhone) {
+				customerInfo.customer_additional_phone = checkoutData.additionalPhone as string;
+			}
+			if (checkoutData.orderNotes) {
+				customerInfo.customer_notes = checkoutData.orderNotes as string;
+			}
+
 			const payload = {
 				payment_method: selectedMethod,
 				items,
-				customer_information: {
-					customer_name: checkoutData.fullName as string,
-					customer_phone: checkoutData.primaryPhone as string,
-					customer_additional_phone: (checkoutData.additionalPhone as string) || undefined,
-					city_id: parseInt(checkoutData.city as string),
-					customer_address: checkoutData.detailedAddress as string,
-					customer_notes: (checkoutData.orderNotes as string) || undefined,
-				},
+				customer_information: customerInfo,
 			};
+
+			console.log('Submitting checkout with payload:', payload);
+			console.log('API endpoint:', `v1/store/${SUBDOMAIN()}/checkout`);
+
 			const response = await api.post(`v1/store/${SUBDOMAIN()}/checkout`, payload);
+			console.log('Checkout response:', response);
+
 			if (response.data.type === 'redirect') {
 				onPaymentComplete(response.data.redirect_url);
 			} else {
@@ -105,7 +148,29 @@ const PaymentMethodPage = ({
 			}
 		} catch (error) {
 			console.error('Checkout failed:', error);
-			// Handle error - maybe show error message
+
+			// Try to extract error details from response
+			let errorMessage = 'Unknown error';
+			if (error && typeof error === 'object' && 'response' in error) {
+				const apiError = error as {
+					response?: { data?: { message?: string; errors?: Record<string, string[]> } };
+				};
+				if (apiError.response?.data) {
+					console.error('API Error Response:', apiError.response.data);
+					if (apiError.response.data.message) {
+						errorMessage = apiError.response.data.message;
+					} else if (apiError.response.data.errors) {
+						// Handle validation errors
+						const errors = apiError.response.data.errors;
+						const errorMessages = Object.values(errors).flat();
+						errorMessage = errorMessages.join(', ');
+					}
+				}
+			} else if (error instanceof Error) {
+				errorMessage = error.message;
+			}
+
+			alert(`فشل في إتمام الطلب: ${errorMessage}`);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -126,22 +191,39 @@ const PaymentMethodPage = ({
 					<CardContent className="space-y-4">
 						{/* Payment Method Selection */}
 						<div className="space-y-4">
-							<div className="relative">
-								<label className="text-sm font-medium text-foreground mb-1 block">
-									اختر طريقة الدفع
-								</label>
-								<Select value={selectedMethod} onValueChange={setSelectedMethod}>
-									<SelectTrigger>
-										<SelectValue placeholder="اختر طريقة الدفع" />
-									</SelectTrigger>
-									<SelectContent>
-										{paymentMethods.map((method) => (
-											<SelectItem key={method.code} value={method.code}>
-												{method.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+							<label className="text-sm font-medium text-foreground mb-1 block">
+								اختر طريقة الدفع
+							</label>
+							<div className="grid grid-cols-1 gap-3">
+								{paymentMethods.map((method) => (
+									<Card
+										key={method.code}
+										className={`cursor-pointer transition-all hover:shadow-md ${
+											selectedMethod === method.code
+												? 'ring-2 ring-primary border-primary'
+												: 'border-border'
+										}`}
+										onClick={() => setSelectedMethod(method.code)}
+									>
+										<CardContent className="p-4">
+											<div className="flex items-center space-x-3 space-x-reverse">
+												<img
+													src={method.logo}
+													alt={method.name}
+													className="w-12 h-12 object-contain"
+												/>
+												<div className="flex-1">
+													<h3 className="font-medium text-foreground">{method.name}</h3>
+												</div>
+												{selectedMethod === method.code && (
+													<div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary">
+														<Check className="h-4 w-4 text-primary-foreground" />
+													</div>
+												)}
+											</div>
+										</CardContent>
+									</Card>
+								))}
 							</div>
 						</div>
 

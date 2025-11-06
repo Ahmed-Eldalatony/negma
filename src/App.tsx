@@ -22,7 +22,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useStore } from './hooks/useStoreData';
 import AccentColorSetter from './components/AccentColorSetter';
 import { pixelTracker } from './lib/pixelTracking';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -39,20 +39,23 @@ const queryClient = new QueryClient({
 function InnerApp() {
 	const { storedData } = useStore();
 	const location = useLocation();
+	const [pixelsInitialized, setPixelsInitialized] = useState(false);
 
 	useEffect(() => {
 		if (storedData?.settings?.pixel) {
-			pixelTracker.initializePixels(storedData.settings.pixel);
+			pixelTracker.initializePixels(storedData.settings.pixel).then(() => {
+				setPixelsInitialized(true);
+			});
 		}
 	}, [storedData]);
 
 	useEffect(() => {
-		if (storedData?.settings?.pixel) {
+		if (pixelsInitialized && storedData?.settings?.pixel) {
 			storedData.settings.pixel.forEach((pixel) => {
 				pixelTracker.trackPageView(pixel.type, location.pathname);
 			});
 		}
-	}, [location.pathname, storedData]);
+	}, [location.pathname, storedData, pixelsInitialized]);
 
 	return (
 		<>
