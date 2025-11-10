@@ -20,4 +20,7 @@ export default defineConfig({
 			},
 		},
 	},
+	preview: {
+		allowedHosts: ['hwm.halastore.net'],
+	},
 });
