@@ -8,6 +8,7 @@ declare global {
 		ttq?: {
 			load: (id: string) => void;
 			track: (event: string, params?: Record<string, unknown>) => void;
+			page: () => void;
 		};
 		fbq?: (command: string, ...args: unknown[]) => void;
 		gtag?: (command: string, targetId: string, config?: Record<string, unknown>) => void;
