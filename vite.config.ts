@@ -14,13 +14,13 @@ export default defineConfig({
 	server: {
 		proxy: {
 			'/api': {
-				target: 'https://hwm.halastore.net',
+				target: 'https://*.halastore.net',
 				changeOrigin: true,
 				secure: true,
 			},
 		},
 	},
 	preview: {
-		allowedHosts: ['hwm.halastore.net'],
+		allowedHosts: ['*.halastore.net'],
 	},
 });

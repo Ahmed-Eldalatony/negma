@@ -23,6 +23,7 @@ import { useStore } from './hooks/useStoreData';
 import AccentColorSetter from './components/AccentColorSetter';
 import { pixelTracker } from './lib/pixelTracking';
 import { useEffect, useState } from 'react';
+import { SUBDOMAIN } from './store';
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -37,7 +38,8 @@ const queryClient = new QueryClient({
 });
 
 function InnerApp() {
-	const { storedData } = useStore();
+	const subdomain = SUBDOMAIN();
+	const { storedData, loading, error } = useStore();
 	const location = useLocation();
 	const [pixelsInitialized, setPixelsInitialized] = useState(false);
 
@@ -56,6 +58,31 @@ function InnerApp() {
 			});
 		}
 	}, [location.pathname, storedData, pixelsInitialized]);
+
+	if (subdomain === '' && process.env.NODE_ENV === 'production') {
+		window.location.href = 'https://halakommers.com';
+		return null;
+	}
+
+	if (loading) {
+		return <div>Loading...</div>;
+	}
+
+	if (error) {
+		return (
+			<div className="flex flex-col items-center justify-center min-h-screen p-4">
+				<p className="text-lg mb-4">there is no store under subdomain {subdomain}</p>
+				<button
+					className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+					onClick={() =>
+						(window.location.href = 'https://seller.boddasaad.me/dashboard/setting-store')
+					}
+				>
+					Go to Dashboard
+				</button>
+			</div>
+		);
+	}
 
 	return (
 		<>
