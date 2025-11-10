@@ -55,6 +55,10 @@ class PixelTracker {
 
 			switch (pixel.type) {
 				case 'tiktok':
+					if (window.ttq) {
+						resolve();
+						return;
+					}
 					console.log(`Loading TikTok pixel script for ID: ${pixel.id}`);
 					script.src = 'https://analytics.tiktok.com/i18n/pixel/events.js';
 					script.async = true;
@@ -123,13 +127,29 @@ class PixelTracker {
 
 	private initializePixel(pixel: Pixel) {
 		switch (pixel.type) {
-			case 'tiktok':
-				if (window.ttq) {
-					console.log(`Initializing TikTok pixel: ${pixel.id}`);
-					window.ttq.load(pixel.id);
-					window.ttq.page();
-				}
+			case 'tiktok': {
+				// Use hardcoded TikTok pixel ID
+				const tikTokId = 'D1EVISJC77U9800H711G';
+				// Wait for ttq to be available
+				const checkTtq = () => {
+					if (window.ttq) {
+						// Validate pixel ID format
+						if (!tikTokId || tikTokId.length !== 20 || !/^[A-Z][A-Z0-9]{19}$/.test(tikTokId)) {
+							console.error('Invalid TikTok Pixel ID format:', tikTokId);
+							return;
+						}
+
+						console.log('Initializing TikTok Pixel with ID:', tikTokId);
+						window.ttq.load(tikTokId);
+						window.ttq.page();
+					} else {
+						setTimeout(checkTtq, 100);
+					}
+				};
+
+				checkTtq();
 				break;
+			}
 			case 'facebook':
 				if (window.fbq && pixel.id) {
 					window.fbq('init', pixel.id);

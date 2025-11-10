@@ -3,10 +3,13 @@ import { create } from 'zustand';
 import { pixelTracker } from './lib/pixelTracking';
 
 export const SUBDOMAIN = () => {
+	if (process.env.NODE_ENV === 'development') {
+		return 'hwm';
+	}
 	const parts = window.location.hostname.split('.');
 	if (parts.length <= 2) return ''; // مفيش subdomain
 	// هنا نعتبر أن الدومين هو آخر قطعتين
-	if (parts.length <= 2) return parts[0]; // مفيش SUBDOMAIN()	
+	if (parts.length <= 2) return parts[0]; // مفيش SUBDOMAIN()
 	console.log(parts.slice(0, -2).join('.'));
 	return parts.slice(0, -2).join('.');
 	// return 'hwm';

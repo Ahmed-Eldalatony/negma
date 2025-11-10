@@ -68,7 +68,7 @@ function InnerApp() {
 		return <div>Loading...</div>;
 	}
 
-	if (error) {
+	if (error && process.env.NODE_ENV !== 'development') {
 		return (
 			<div className="flex flex-col items-center justify-center min-h-screen p-4">
 				<p className="text-lg mb-4">there is no store under subdomain {subdomain}</p>
