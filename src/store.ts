@@ -3,11 +3,13 @@ import { create } from 'zustand';
 import { pixelTracker } from './lib/pixelTracking';
 
 export const SUBDOMAIN = () => {
-	// const parts = window.location.hostname;
-	// console.log('=========', parts);
-	// // if (parts.length <= 2) return parts[0]; // مفيش SUBDOMAIN()
-	// // return parts.slice(0, -2).join('.');
-	return 'hwm';
+	const parts = window.location.hostname.split('.');
+	if (parts.length <= 2) return ''; // مفيش subdomain
+	// هنا نعتبر أن الدومين هو آخر قطعتين
+	if (parts.length <= 2) return parts[0]; // مفيش SUBDOMAIN()	
+	console.log(parts.slice(0, -2).join('.'));
+	return parts.slice(0, -2).join('.');
+	// return 'hwm';
 };
 
 interface Pixel {
