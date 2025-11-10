@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Menu, Rocket, Asterisk } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
-import HeroBanner from '@/components/HeroBanner';
+// import HeroBanner from '@/components/HeroBanner';
 import CategoryCard from '@/components/CategoryCard';
 import CategoryCardSkeleton from '@/components/CategoryCardSkeleton';
 import ProductCard from '@/components/ProductCard';
@@ -113,7 +113,7 @@ export default function Home() {
 				</div>
 			</header>
 
-			<HeroBanner />
+			{/* <HeroBanner /> */}
 
 			<div className="space-y-6 py-4 ">
 				<section className="min-w-28 max-w-[100vw]">
