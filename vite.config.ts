@@ -14,7 +14,7 @@ export default defineConfig({
 	server: {
 		proxy: {
 			'/api': {
-				target: 'https://boddasaad.me',
+				target: 'https://halastore.net',
 				changeOrigin: true,
 				secure: true,
 			},
