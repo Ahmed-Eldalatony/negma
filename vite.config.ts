@@ -14,7 +14,7 @@ export default defineConfig({
 	server: {
 		proxy: {
 			'/api': {
-				target: 'https://halastore.net',
+				target: 'https://hwm.halastore.net',
 				changeOrigin: true,
 				secure: true,
 			},
