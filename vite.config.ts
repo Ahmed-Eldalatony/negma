@@ -12,7 +12,7 @@ export default defineConfig({
 		},
 	},
 	server: {
-		allowedHosts: ['*.halastore.net', 'halastore.net'],
+		allowedHosts: true, // Allows all hosts (less secure)
 		proxy: {
 			'/api': {
 				target: 'https://halastore.net',
