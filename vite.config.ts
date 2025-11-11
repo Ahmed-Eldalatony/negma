@@ -21,7 +21,4 @@ export default defineConfig({
 			},
 		},
 	},
-	preview: {
-		allowedHosts: ['*.halastore.net', 'halastore.net'],
-	},
 });
