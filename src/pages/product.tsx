@@ -8,19 +8,14 @@ import {
 	Users,
 	Zap,
 	ChevronDown,
-	MessageCircle,
-	User,
-	Phone,
-	MapPin,
 	ShoppingCart,
 	ArrowRight,
 } from 'lucide-react';
-import ProductImageGallery from '@/components/ProductImageGallery';
 import ColorSelector from '@/components/ColorSelector';
 import OfferCard from '@/components/OfferCard';
-import CountdownTimer from '@/components/CountdownTimer';
+import HeroSection from '@/components/HeroSection';
+import OrderForm from '@/components/OrderForm';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
 	Dialog,
 	DialogContent,
@@ -38,7 +33,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCartStore } from '@/store';
 import { useProduct } from '@/hooks/useProducts';
 import { useCurrency } from '@/hooks/useCurrency';
-import { convertPrice, formatPrice } from '@/lib/utils';
+
 import { pixelTracker } from '@/lib/pixelTracking';
 // TODO: get the right type instead of any
 export function meta() {
@@ -105,9 +100,13 @@ export default function ProductPage() {
 	const { addToCart, isInCart } = useCartStore();
 	const { currency } = useCurrency();
 	const [showCartDialog, setShowCartDialog] = useState(false);
+
+	const scrollToOrder = () => {
+		document.getElementById('order-form')?.scrollIntoView({
+			behavior: 'smooth',
+		});
+	};
 	const [dialogMode, setDialogMode] = useState<'add' | 'development'>('add');
-	const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
-	const [showFullDescription, setShowFullDescription] = useState(false);
 
 	if (isLoading || !product) {
 		return (
@@ -146,24 +145,6 @@ export default function ProductPage() {
 		);
 	}
 
-	const convertedPrice = currency
-		? convertPrice(safeProduct.price, currency.rate_to_usd)
-		: safeProduct.price;
-	const convertedOriginalPrice =
-		safeProduct.originalPrice && currency
-			? convertPrice(safeProduct.originalPrice, currency.rate_to_usd)
-			: safeProduct.originalPrice;
-
-	const priceDisplay = currency
-		? formatPrice(convertedPrice, currency.currency)
-		: `$${safeProduct.price}`;
-	const originalPriceDisplay =
-		convertedOriginalPrice && currency
-			? formatPrice(convertedOriginalPrice, currency.currency)
-			: safeProduct.originalPrice
-				? `$${safeProduct.originalPrice}`
-				: null;
-
 	const getTimeAgo = (dateString: string) => {
 		const now = new Date();
 		const reviewDate = new Date(dateString);
@@ -196,197 +177,13 @@ export default function ProductPage() {
 				</Button>
 			</div>
 
-			<div className="space-y-3 p-4">
-				{/* Product Image Gallery */}
-				<div className="relative">
-					{safeProduct.rating && (
-						<Badge
-							className="bg-primary text-primary-foreground absolute top-3 right-3 z-10 flex items-center gap-1 text-sm font-bold"
-							data-testid="badge-rating"
-						>
-							<Star className="h-3 w-3 fill-current" />
-							{safeProduct.rating}
-						</Badge>
-					)}
-					{safeProduct.discount && (
-						<Badge
-							variant="destructive"
-							className="absolute top-3 left-3 z-10 text-sm font-bold"
-							data-testid="badge-discount-main"
-						>
-							خصم {safeProduct.discount}%
-						</Badge>
-					)}
-					<ProductImageGallery images={productImages} productName={safeProduct.name} />
-				</div>
-
-				{/* Product Title and Basic Info */}
-				<div>
-					<div className="flex items-center gap-2 mt-1">
-						{safeProduct.rating && (
-							<div className="flex items-center">
-								<Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-								<span className="text-sm ml-1">{safeProduct.rating}</span>
-							</div>
-						)}
-						{safeProduct.reviewCount && (
-							<span className="text-sm text-muted-foreground">
-								({safeProduct.reviewCount} تقييم)
-							</span>
-						)}
-					</div>
-				</div>
-
-				{/* Price Section */}
-				<div className="bg-muted rounded-md p-3">
-					<div className="flex items-end justify-between">
-						<div className="flex-1">
-							<div className=" mb-1 flex  ">
-								{originalPriceDisplay && (
-									<span className="line-through ">{originalPriceDisplay}</span>
-								)}
-								<div className="flex items-center justify-between w-full gap-2">
-									<h1 className="text-xl font-bold">{safeProduct.name}</h1>
-									<span className="block text-2xl font-bold" data-testid="text-main-price">
-										{priceDisplay}
-									</span>
-								</div>
-							</div>
-
-							{convertedOriginalPrice && (
-								<div className="text-muted-foreground mt-1 text-xs">
-									وفر{' '}
-									{currency
-										? formatPrice(convertedOriginalPrice - convertedPrice, currency.currency)
-										: `$${(convertedOriginalPrice - convertedPrice).toFixed(2)}`}{' '}
-									(خصم {safeProduct.discount}%)
-								</div>
-							)}
-						</div>
-					</div>
-					<div className="flex  text-sm">
-						<span className="font-medium ml-2">الكمية المتوفرة:</span>
-						<span
-							className={`text-sm font-medium ${
-								currentProduct.inventory > 10
-									? 'text-green-600'
-									: currentProduct.inventory > 0
-										? 'text-orange-600'
-										: 'text-red-600'
-							}`}
-						>
-							{currentProduct.inventory > 10
-								? `${currentProduct.inventory} قطعة`
-								: currentProduct.inventory > 0
-									? `متبقي ${currentProduct.inventory} قطعة`
-									: 'غير متوفر'}
-						</span>
-					</div>
-
-					{/* Product Description in Price Card */}
-					{safeProduct.description && (
-						<div className="mt-3 text-start pt-3 border-t border-border/50">
-							<p
-								className="text-muted-foreground text-sm leading-relaxed"
-								data-testid="text-description"
-							>
-								{safeProduct.description.length > 150 && !showFullDescription
-									? `${safeProduct.description.substring(0, 150)}...`
-									: safeProduct.description}
-							</p>
-							{safeProduct.description.length > 150 && (
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => setShowFullDescription(!showFullDescription)}
-									className="mt-2 h-auto p-0 text-xs text-primary hover:text-primary/80"
-								>
-									{showFullDescription ? 'عرض أقل' : 'اقرأ المزيد'}
-								</Button>
-							)}
-						</div>
-					)}
-				</div>
-
-				{/* Price Packages */}
-				{currentProduct?.prices &&
-					currentProduct.prices.filter((p) => p.min_quantity > 1).length > 0 && (
-						<div className="space-y-3">
-							{/* <h3 className="text-sm font-medium">أسعار الجملة</h3> */}
-							<div className="grid grid-cols-1 gap-2">
-								{currentProduct.prices
-									.filter((p) => p.min_quantity > 1)
-									.sort((a, b) => a.min_quantity - b.min_quantity)
-									.map((pricePackage) => {
-										const packagePrice = currency
-											? convertPrice(parseFloat(pricePackage.price_in_usd), currency.rate_to_usd)
-											: parseFloat(pricePackage.price_in_usd);
-										const packagePriceDisplay = currency
-											? formatPrice(packagePrice, currency.currency)
-											: `$${packagePrice.toFixed(2)}`;
-										const pricePerUnit = packagePrice / pricePackage.min_quantity;
-										const pricePerUnitDisplay = currency
-											? formatPrice(pricePerUnit, currency.currency)
-											: `$${pricePerUnit.toFixed(2)}`;
-
-										const isSelected = selectedPackage === pricePackage.id.toString();
-
-										return (
-											<div
-												key={pricePackage.id}
-												className={`border rounded-lg p-3 cursor-pointer transition-colors ${
-													isSelected
-														? 'border-primary bg-primary/5'
-														: 'border-border hover:border-primary/50'
-												}`}
-												onClick={() =>
-													setSelectedPackage(isSelected ? null : pricePackage.id.toString())
-												}
-											>
-												<div className="flex items-center justify-between">
-													<div className="flex items-center gap-3">
-														<div
-															className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-																isSelected ? 'border-primary bg-primary' : 'border-muted-foreground'
-															}`}
-														>
-															{isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
-														</div>
-														<div>
-															<div className="font-medium text-start text-sm">
-																{pricePackage.min_quantity} قطع
-															</div>
-															<div className="text-xs text-muted-foreground">
-																{pricePerUnitDisplay} للقطعة
-															</div>
-														</div>
-													</div>
-													<div className="text-left">
-														<div className="font-bold text-sm">{packagePriceDisplay}</div>
-														<div className="text-xs text-green-600">
-															وفر{' '}
-															{(() => {
-																const singleUnitPrice = currency
-																	? convertPrice(
-																			parseFloat(currentProduct.prices[0]?.price_in_usd || '0'),
-																			currency.rate_to_usd
-																		)
-																	: parseFloat(currentProduct.prices[0]?.price_in_usd || '0');
-																const individualTotal = singleUnitPrice * pricePackage.min_quantity;
-																const savings = individualTotal - packagePrice;
-																return currency
-																	? formatPrice(savings, currency.currency)
-																	: `$${savings.toFixed(2)}`;
-															})()}
-														</div>
-													</div>
-												</div>
-											</div>
-										);
-									})}
-							</div>
-						</div>
-					)}
+			<div className="space-y-3">
+				<HeroSection
+					product={safeProduct}
+					productImages={productImages}
+					currency={currency ?? undefined}
+					onOrderClick={scrollToOrder}
+				/>
 
 				{/* Color Selector */}
 				{safeProduct.colors && (
@@ -416,79 +213,7 @@ export default function ProductPage() {
 						</div>
 					</div>
 				)}
-
-				{/* Features Grid */}
-				<div className="grid grid-cols-4 gap-2 text-center">
-					<div className="rounded-md border p-3">
-						<Zap className="mx-auto mb-1 h-5 w-5" />
-						<div className="text-[10px] font-medium">توصيل سريع</div>
-					</div>
-					<div className="rounded-md border p-3">
-						<Users className="mx-auto mb-1 h-5 w-5" />
-						<div className="text-[10px] font-medium">500+ طلب</div>
-					</div>
-					<div className="rounded-md border p-3">
-						<Shield className="mx-auto mb-1 h-5 w-5" />
-						<div className="text-[10px] font-medium">منتج أصلي</div>
-					</div>
-					<div className="rounded-md border p-3">
-						<Truck className="mx-auto mb-1 h-5 w-5" />
-						<div className="text-[10px] font-medium">توصيل مجاني</div>
-					</div>
-				</div>
-
-				{/* Order Section */}
-				<div className="bg-muted space-y-3 rounded-md p-3">
-					<div className="bg-destructive/20 rounded-md p-2">
-						<div className="mb-1 text-center">
-							<span className="text-xs font-medium">ينتهي العرض خلال:</span>
-						</div>
-						<CountdownTimer />
-					</div>
-
-					<Button
-						className="bg-primary hover:bg-primary/90 h-12 w-full text-sm font-bold"
-						onClick={() => console.log('Order placed')}
-						data-testid="button-order-main"
-					>
-						اطلب الآن - الدفع عند الاستلام
-					</Button>
-
-					<div className="bg-muted flex items-center gap-2 rounded-md p-3">
-						<MessageCircle className="h-4 w-4" />
-						<span className="text-sm font-medium">لإجراء طلب، يرجى إدخال معلوماتك هنا:</span>
-					</div>
-
-					<div className="space-y-2">
-						<div className="relative">
-							<User className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-							<input
-								type="text"
-								placeholder="الاسم الأول"
-								className="bg-background border-input w-full rounded-md border px-3 py-2 pl-10 text-right text-sm"
-								data-testid="input-first-name"
-							/>
-						</div>
-						<div className="relative">
-							<Phone className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-							<input
-								type="tel"
-								placeholder="رقم الهاتف"
-								className="bg-background border-input w-full rounded-md border px-3 py-2 pl-10 text-right text-sm"
-								data-testid="input-phone"
-							/>
-						</div>
-						<div className="relative">
-							<MapPin className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-							<input
-								type="text"
-								placeholder="عنوان التوصيل"
-								className="bg-background border-primary w-full rounded-md border-2 px-3 py-2 pl-10 text-right text-sm font-medium"
-								data-testid="input-address"
-							/>
-						</div>
-					</div>
-				</div>
+				<OrderForm prices={currentProduct?.prices} currency={currency ?? undefined} />
 
 				{/* Policies Accordion */}
 				<Accordion type="single" collapsible className="space-y-2">
