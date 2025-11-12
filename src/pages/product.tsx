@@ -1,16 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import {
-	Star,
-	Check,
-	Truck,
-	Shield,
-	Users,
-	Zap,
-	ChevronDown,
-	ShoppingCart,
-	ArrowRight,
-} from 'lucide-react';
+import { Star, Check, Truck, Shield, Users, Zap, ShoppingCart, ArrowRight } from 'lucide-react';
 import ColorSelector from '@/components/ColorSelector';
 import OfferCard from '@/components/OfferCard';
 import HeroSection from '@/components/HeroSection';
@@ -33,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCartStore } from '@/store';
 import { useProduct } from '@/hooks/useProducts';
 import { useCurrency } from '@/hooks/useCurrency';
+import { faqs } from '@/shared/mock-data';
 
 import { pixelTracker } from '@/lib/pixelTracking';
 // TODO: get the right type instead of any
@@ -215,56 +206,36 @@ export default function ProductPage() {
 				)}
 				<OrderForm prices={currentProduct?.prices} currency={currency ?? undefined} />
 
-				{/* Policies Accordion */}
-				<Accordion type="single" collapsible className="space-y-2">
-					<AccordionItem value="payment" className="rounded-md border px-4">
-						<AccordionTrigger className="py-3 text-sm font-medium hover:no-underline">
-							<div className="flex items-center gap-2">
-								<Shield className="h-4 w-4" />
-								<span>سياسة الدفع عند الاستلام</span>
-							</div>
-						</AccordionTrigger>
-						<AccordionContent className="text-muted-foreground pb-3 text-sm">
-							الدفع عند وصول المنتج. الدفع عند وصول المنتج المنتج
-						</AccordionContent>
-					</AccordionItem>
-
-					<AccordionItem value="guarantee" className="rounded-md border px-4">
-						<AccordionTrigger className="py-3 text-sm font-medium hover:no-underline">
-							<div className="flex items-center gap-2">
-								<Check className="h-4 w-4" />
-								<span>ضمان 30 يوماً</span>
-							</div>
-						</AccordionTrigger>
-						<AccordionContent className="text-muted-foreground pb-3 text-sm">
-							ضمان استرداد المال في حالة عدم الرضا عن المنتج
-						</AccordionContent>
-					</AccordionItem>
-
-					<AccordionItem value="shipping" className="rounded-md border px-4">
-						<AccordionTrigger className="py-3 text-sm font-medium hover:no-underline">
-							<div className="flex items-center gap-2">
-								<Truck className="h-4 w-4" />
-								<span>الشحن</span>
-							</div>
-						</AccordionTrigger>
-						<AccordionContent className="text-muted-foreground pb-3 text-sm">
-							شحن مجاني على جميع الطلبات فوق 50$. التوصيل خلال 2-4 أيام عمل
-						</AccordionContent>
-					</AccordionItem>
-
-					<AccordionItem value="return" className="rounded-md border px-4">
-						<AccordionTrigger className="py-3 text-sm font-medium hover:no-underline">
-							<div className="flex items-center gap-2">
-								<ChevronDown className="h-4 w-4" />
-								<span>سياسة الإرجاع</span>
-							</div>
-						</AccordionTrigger>
-						<AccordionContent className="text-muted-foreground pb-3 text-sm">
-							يمكنك إرجاع المنتج خلال 30 يوماً من تاريخ الاستلام
-						</AccordionContent>
-					</AccordionItem>
-				</Accordion>
+				{/* FAQ Section */}
+				<div className="py-8 bg-gradient-to-b from-muted/20 to-background">
+					<div className="text-center mb-12 animate-fade-in">
+						<h2 className="text-3xl md:text-5xl font-bold mb-4">الأسئلة الشائعة ❓</h2>
+						<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+							إجابات على جميع استفساراتك قبل الطلب
+						</p>
+					</div>
+					<div className="max-w-3xl mx-auto">
+						<Accordion type="single" collapsible className="space-y-4">
+							{faqs.map((faq, index) => (
+								<AccordionItem
+									key={index}
+									value={`item-${index}`}
+									className="bg-card border-2 rounded-xl px-6 hover:border-primary/50 transition-colors animate-fade-in"
+									style={{
+										animationDelay: `${index * 0.05}s`,
+									}}
+								>
+									<AccordionTrigger className="text-right hover:no-underline py-5">
+										<span className="text-lg font-semibold">{faq.question}</span>
+									</AccordionTrigger>
+									<AccordionContent className="text-muted-foreground text-base leading-relaxed pb-5">
+										{faq.answer}
+									</AccordionContent>
+								</AccordionItem>
+							))}
+						</Accordion>
+					</div>
+				</div>
 
 				{/* Additional Features Grid */}
 				<div className="bg-muted grid grid-cols-2 gap-3 rounded-md p-4">
