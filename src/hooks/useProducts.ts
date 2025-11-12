@@ -150,12 +150,9 @@ export const useProduct = (id: string | undefined) => {
 			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
 			try {
-				const response = await fetch(
-					`https://boddasaad.me/api/v1/store/${SUBDOMAIN()}/products/${id}`,
-					{
-						signal: controller.signal,
-					}
-				);
+				const response = await fetch(`/api/v1/store/${SUBDOMAIN()}/products/${id}`, {
+					signal: controller.signal,
+				});
 
 				clearTimeout(timeoutId);
 

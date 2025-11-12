@@ -26,7 +26,7 @@ export const useCountries = () => {
 			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
 			try {
-				const response = await fetch('https://boddasaad.me/api/v1/utilities/countries', {
+				const response = await fetch('/api/v1/utilities/countries', {
 					signal: controller.signal,
 				});
 

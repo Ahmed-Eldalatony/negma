@@ -23,9 +23,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCartStore } from '@/store';
 import { useProduct } from '@/hooks/useProducts';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useStore } from '@/hooks/useStoreData';
 import { faqs } from '@/shared/mock-data';
 
 import { pixelTracker } from '@/lib/pixelTracking';
+import { Metadata } from '@/components/Metadata';
 // TODO: get the right type instead of any
 export function meta() {
 	return [{ title: 'منتج - نجمة' }, { name: 'description', content: 'تفاصيل المنتج' }];
@@ -37,6 +39,7 @@ export default function ProductPage() {
 	const productId = params.id || '1';
 
 	const { data: currentProduct, isLoading } = useProduct(productId);
+	const { storedData } = useStore();
 
 	useEffect(() => {
 		if (currentProduct) {
@@ -155,6 +158,12 @@ export default function ProductPage() {
 
 	return (
 		<div className="bg-background min-h-screen mb-40">
+			<Metadata
+				title={`${currentProduct?.name} - ${storedData?.name || 'Store'}`}
+				description={currentProduct?.description || 'Product details'}
+				image={currentProduct?.media[0]?.url}
+				url={window.location.href}
+			/>
 			{/* Header with Back Button */}
 			<div className="bg-background sticky top-0 z-40 border-b p-4">
 				<Button
