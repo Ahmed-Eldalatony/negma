@@ -41,7 +41,7 @@ export const useProducts = () => {
 			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
 			try {
-				const response = await fetch(`https://boddasaad.me/api/v1/store/${SUBDOMAIN()}/products`, {
+				const response = await fetch(`/api/v1/store/${SUBDOMAIN()}/products`, {
 					signal: controller.signal,
 				});
 
@@ -75,7 +75,7 @@ export const useProductsByCategory = (categoryId: string | undefined) => {
 
 			try {
 				const response = await fetch(
-					`https://boddasaad.me/api/v1/store/${SUBDOMAIN()}/products?category_id=${categoryId}`,
+					`/api/v1/store/${SUBDOMAIN()}/products?category_id=${categoryId}`,
 					{
 						signal: controller.signal,
 					}
@@ -115,7 +115,7 @@ export const useProductsWithFilters = (categoryId?: string, search?: string) => 
 				if (search) params.append('search', search);
 				const queryString = params.toString();
 
-				const url = `https://boddasaad.me/api/v1/store/${SUBDOMAIN()}/products${queryString ? `?${queryString}` : ''}`;
+				const url = `/api/v1/store/${SUBDOMAIN()}/products${queryString ? `?${queryString}` : ''}`;
 
 				const response = await fetch(url, {
 					signal: controller.signal,

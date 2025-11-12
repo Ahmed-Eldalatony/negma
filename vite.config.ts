@@ -15,7 +15,7 @@ export default defineConfig({
 		allowedHosts: true, // Allows all hosts (less secure)
 		proxy: {
 			'/api': {
-				target: 'https://halastore.net',
+				target: 'https://boddasaad.me',
 				changeOrigin: true,
 				secure: true,
 			},

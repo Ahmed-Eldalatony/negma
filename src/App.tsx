@@ -26,91 +26,85 @@ import { useEffect, useState } from 'react';
 import { SUBDOMAIN } from './store';
 
 const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			staleTime: 5 * 60 * 1000, // 5 minutes
-			gcTime: 10 * 60 * 1000, // 10 minutes
-			retry: process.env.NODE_ENV === 'production' ? 2 : 1,
-			retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-			refetchOnWindowFocus: process.env.NODE_ENV === 'production',
-		},
-	},
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: process.env.NODE_ENV === 'production' ? 2 : 1,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnWindowFocus: process.env.NODE_ENV === 'production',
+    },
+  },
 });
 
 function InnerApp() {
-	const subdomain = SUBDOMAIN();
-	const { storedData, loading, error } = useStore();
-	const location = useLocation();
-	const [pixelsInitialized, setPixelsInitialized] = useState(false);
+  const subdomain = SUBDOMAIN();
+  const { storedData, loading, error } = useStore();
+  const location = useLocation();
+  const [pixelsInitialized, setPixelsInitialized] = useState(false);
 
-	useEffect(() => {
-		if (storedData?.settings?.pixel) {
-			pixelTracker.initializePixels(storedData.settings.pixel).then(() => {
-				setPixelsInitialized(true);
-			});
-		}
-	}, [storedData]);
+  useEffect(() => {
+    if (storedData?.settings?.pixel) {
+      pixelTracker.initializePixels(storedData.settings.pixel).then(() => {
+        setPixelsInitialized(true);
+      });
+    }
+  }, [storedData]);
 
-	useEffect(() => {
-		if (pixelsInitialized && storedData?.settings?.pixel) {
-			storedData.settings.pixel.forEach((pixel) => {
-				pixelTracker.trackPageView(pixel.type, location.pathname);
-			});
-		}
-	}, [location.pathname, storedData, pixelsInitialized]);
+  useEffect(() => {
+    if (pixelsInitialized && storedData?.settings?.pixel) {
+      storedData.settings.pixel.forEach((pixel) => {
+        pixelTracker.trackPageView(pixel.type, location.pathname);
+      });
+    }
+  }, [location.pathname, storedData, pixelsInitialized]);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-	if (subdomain === '' && process.env.NODE_ENV === 'production') {
-		window.location.href = 'https://halakommers.com';
-		return null;
-	}
+  if (error && process.env.NODE_ENV !== 'development') {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 text-center">
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-6xl font-bold text-primary">404</h1>
+            <h2 className="text-2xl font-semibold">الصفحة غير موجودة</h2>
+            <p className="text-muted-foreground">{subdomain} لا يوجد متجر تحت النطاق الفرعي </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-	if (loading) {
-		return <div>Loading...</div>;
-	}
+  return (
+    <>
+      <AccentColorSetter />
+      <Layout>
+        <Routes>
+          <Route index element={<Home />} />
+          <Route path="product/:id" element={<ProductPage />} />
+          <Route path="categories" element={<CategoriesPage />} />
+          <Route path="category/:id" element={<CategoryPage />} />
+          <Route path="search" element={<SearchPage />} />
 
-	if (error && process.env.NODE_ENV !== 'development') {
-		return (
-			<div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 text-center">
-				<div className="space-y-6">
-					<div className="space-y-2">
-						<h1 className="text-6xl font-bold text-primary">404</h1>
-						<h2 className="text-2xl font-semibold">الصفحة غير موجودة</h2>
-						<p className="text-muted-foreground">{subdomain} لا يوجد متجر تحت النطاق الفرعي </p>
-					</div>
-				</div>
-			</div>
-		);
-	}
-
-	return (
-		<>
-			<AccentColorSetter />
-			<Layout>
-				<Routes>
-					<Route index element={<Home />} />
-					<Route path="product/:id" element={<ProductPage />} />
-					<Route path="categories" element={<CategoriesPage />} />
-					<Route path="category/:id" element={<CategoryPage />} />
-					<Route path="search" element={<SearchPage />} />
-
-					<Route path="cart" element={<CartPage />} />
-					<Route path="checkout" element={<CheckoutPage />} />
-					<Route path="orders" element={<OrdersPage />} />
-					<Route path="*" element={<NotFoundPage />} />
-				</Routes>
-			</Layout>
-		</>
-	);
+          <Route path="cart" element={<CartPage />} />
+          <Route path="checkout" element={<CheckoutPage />} />
+          <Route path="orders" element={<OrdersPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Layout>
+    </>
+  );
 }
 
 function App() {
-	return (
-		<QueryClientProvider client={queryClient}>
-			<BrowserRouter>
-				<InnerApp />
-			</BrowserRouter>
-		</QueryClientProvider>
-	);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <InnerApp />
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
 }
 
 export default App;

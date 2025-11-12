@@ -1,4 +1,4 @@
-const BASE_URL = 'https://boddasaad.me/api/';
+const BASE_URL = '/api/';
 const TIMEOUT_DURATION = 10000; // 10 seconds
 
 export const api = {
