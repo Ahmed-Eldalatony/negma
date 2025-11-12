@@ -8,6 +8,7 @@ import {
 	CarouselNext,
 	CarouselPrevious,
 } from '@/components/ui/carousel';
+import { useStore } from '@/hooks/useStoreData';
 
 interface HeroSectionProps {
 	product: {
@@ -30,6 +31,7 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ product, productImages, currency, onOrderClick }: HeroSectionProps) => {
+	const { storedData } = useStore();
 	const rate = currency
 		? typeof currency.rate_to_usd === 'string'
 			? parseFloat(currency.rate_to_usd)
@@ -56,37 +58,46 @@ const HeroSection = ({ product, productImages, currency, onOrderClick }: HeroSec
 		<section className="py-3 px-3 bg-background">
 			{/* Store Logo/Name */}
 			<div className="text-center mb-4">
-				<h2 className="text-xl font-bold">متجر العناية الكورية</h2>
-				<p className="text-xs text-muted-foreground">منتجات أصلية 100%</p>
+				<h2 className="text-xl font-bold">{storedData?.name || 'متجر العناية الكورية'}</h2>
+				<p className="text-xs text-muted-foreground">
+					{storedData?.settings?.description || 'منتجات أصلية 100%'}
+				</p>
 			</div>
 
 			<div className="max-w-md mx-auto">
 				{/* Product Image Carousel */}
 				<div className="relative mb-4 animate-scale-in">
-					<Carousel className="w-full">
-						<CarouselContent>
-							{productImages.map((img, index) => (
-								<CarouselItem key={index}>
-									<div className="relative aspect-square">
-										<img
-											src={img}
-											alt={`صورة المنتج ${index + 1}`}
-											className="w-full h-full object-cover rounded-lg shadow-soft"
-										/>
-									</div>
-								</CarouselItem>
-							))}
-						</CarouselContent>
-						<CarouselPrevious className="left-2 bg-white" />
-						<CarouselNext className="right-2 bg-white" />
-					</Carousel>
+					<div className="relative">
+						<Carousel className="w-full ">
+							<CarouselContent className="-ml-1 ">
+								{productImages.map((img, index) => (
+									<CarouselItem key={index} className="pl-1">
+										<div className="relative aspect-square">
+											<img
+												src={img}
+												alt={`صورة المنتج ${index + 1}`}
+												className="w-full   h-full object-cover rounded-lg shadow-soft"
+												onError={(e) => {
+													console.error(`Failed to load image ${index + 1}:`, img);
+													e.currentTarget.style.display = 'none';
+												}}
+											/>
+										</div>
+									</CarouselItem>
+								))}
+							</CarouselContent>
+							<CarouselPrevious className="left-2 bg-white/90 hover:bg-white" />
+							<CarouselNext className="right-2 bg-white/90 hover:bg-white" />
+						</Carousel>
+					</div>
+
 					{discountPercent > 0 && (
 						<div className="absolute top-2 right-2 bg-destructive text-destructive-foreground px-3 py-1 rounded-full font-bold text-xs">
 							خصم {discountPercent}%
 						</div>
 					)}
 					{product.rating && (
-						<div className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs flex items-center gap-1">
+						<div className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs flex  gap-1">
 							<Star className="w-4 h-4 fill-current" />
 							<span>{product.rating}</span>
 						</div>
@@ -94,7 +105,7 @@ const HeroSection = ({ product, productImages, currency, onOrderClick }: HeroSec
 				</div>
 
 				{/* Product Details */}
-				<div className="mb-3">
+				<div className="mb-3 text-start ">
 					<h1 className="text-lg font-bold mb-2 leading-tight">{product.name}</h1>
 					{product.rating && product.reviewCount && (
 						<div className="flex items-center gap-2 mb-2 text-xs">

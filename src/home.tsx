@@ -12,29 +12,26 @@ import SearchFilter from '@/components/SearchFilter';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts, useProductsByCategory } from '@/hooks/useProducts';
 import { useStore } from '@/hooks/useStoreData';
 import { useCategory } from '@/hooks/useCategory';
 import { useCurrency } from '@/hooks/useCurrency';
 import { formatPrice } from '@/lib/utils';
-// TODO: look for how to use metdata of the fetched data
-export function meta() {
-	return [
-		{ title: 'نجمة - الرئيسية' },
-		{ name: 'description', content: 'تسوق المنتجات والتصنيفات في نجمة' },
-	];
-}
 
 export default function Home() {
 	const navigate = useNavigate();
 	const { storedData, error: storeError } = useStore();
 	const { categories, loading: categoriesLoading, error: categoriesError } = useCategory();
-	const { data: products, isLoading: productsLoading } = useProducts();
 	const { currency } = useCurrency();
 
 	// Search and filter state
 	const [searchText, setSearchText] = useState('');
 	const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
+
+	const { data: products, isLoading: productsLoading } = useProducts();
+	const { data: filteredProducts, isLoading: filteredProductsLoading } = useProductsByCategory(
+		selectedCategoryId !== 'all' ? selectedCategoryId : undefined
+	);
 
 	// Handle search navigation
 	const handleSearch = () => {
@@ -120,8 +117,8 @@ export default function Home() {
 					<h2 className="mb-3 text-lg font-bold" data-testid="text-categories-title">
 						التصنيفات
 					</h2>
-					<ScrollArea className="">
-						<div className="flex gap-3 pb-4 ">
+					<ScrollArea className="" dir="rtl">
+						<div className="flex  gap-3 pb-4 ">
 							{categoriesLoading ? (
 								Array.from({ length: 6 }).map((_, i) => (
 									<CategoryCardSkeleton key={i} className={'min-w-28'} />
@@ -146,11 +143,36 @@ export default function Home() {
 
 				<section>
 					<h2 className="mb-3 text-lg font-bold" data-testid="text-products-title">
-						المنتجات
+						{selectedCategoryId !== 'all'
+							? `المنتجات - ${categories?.find((cat) => cat.id.toString() === selectedCategoryId)?.name || 'التصنيف المحدد'}`
+							: 'المنتجات'}
 					</h2>
 					<div className="grid grid-cols-2 px-4 gap-3">
-						{productsLoading ? (
+						{productsLoading || (selectedCategoryId !== 'all' && filteredProductsLoading) ? (
 							Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
+						) : selectedCategoryId !== 'all' && filteredProducts ? (
+							filteredProducts
+								.slice(0, 4)
+								.map((p) => ({
+									id: p.id.toString(),
+									name: p.name,
+									nameAr: p.name,
+									image: p.media[0]?.url || '',
+									price: parseFloat(p.prices[0]?.price_in_usd || '0'),
+									originalPrice: undefined,
+									discount: undefined,
+									category: '',
+									categoryAr: '',
+									inStock: p.inventory > 0,
+									stockCount: p.inventory,
+									rating: undefined,
+									reviewCount: undefined,
+									description: p.description,
+									descriptionAr: p.description,
+									colors: undefined,
+									offers: undefined,
+								}))
+								.map((product) => <ProductCard key={product.id} product={product} />)
 						) : products ? (
 							products
 								.slice(0, 4)
