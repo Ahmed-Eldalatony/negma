@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, Rocket, Asterisk } from 'lucide-react';
+import { Menu, Asterisk } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import HeroBanner from '@/components/HeroBanner';
 import CategoryCard from '@/components/CategoryCard';
@@ -15,14 +15,11 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useProducts, useProductsByCategory } from '@/hooks/useProducts';
 import { useStore } from '@/hooks/useStoreData';
 import { useCategory } from '@/hooks/useCategory';
-import { useCurrency } from '@/hooks/useCurrency';
-import { formatPrice } from '@/lib/utils';
 
 export default function Home() {
   const navigate = useNavigate();
   const { storedData, error: storeError } = useStore();
   const { categories, loading: categoriesLoading, error: categoriesError } = useCategory();
-  const { currency } = useCurrency();
 
   // Search and filter state
   const [searchText, setSearchText] = useState('');
@@ -53,11 +50,7 @@ export default function Home() {
       {/* Top Banner */}
       <div className="bg-primary text-primary-foreground sticky top-0 z-50 px-4 py-3">
         <div className="flex items-center justify-center gap-2 text-sm font-medium">
-          <Rocket className="h-4 w-4" />
-          <span data-testid="text-banner-promo bg-black">
-            شحن مجاني على الطلبات التي تزيد عن{' '}
-            {currency ? formatPrice(50, currency.currency) : '$50'}
-          </span>
+          <span data-testid="text-banner-promo">{storedData?.settings.promotional_bar}</span>
         </div>
       </div>
 

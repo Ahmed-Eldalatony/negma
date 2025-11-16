@@ -20,6 +20,7 @@ interface Settings {
 	country_id: string;
 	description: string;
 	social_links: SocialLink[];
+	promotional_bar: string;
 }
 
 interface Banner {

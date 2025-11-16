@@ -1,3 +1,4 @@
+- fixing the hero carousel
 - i gotta look for how to actuall allow just the right hoststs in viteconfig
 - the phonenumber component is not perfect
 - Adding some caching behaviors
