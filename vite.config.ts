@@ -15,7 +15,7 @@ export default defineConfig({
 		allowedHosts: true, // Allows all hosts (less secure)
 		proxy: {
 			'/api': {
-				target: 'https://api.halakommers.com',
+				target: 'https://api.halakommers.com/',
 				changeOrigin: true,
 				secure: true,
 			},
