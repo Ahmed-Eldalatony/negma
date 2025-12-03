@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { SUBDOMAIN } from '@/store';
+import { api } from '@/lib/api';
 
 interface Product {
 	id: number;
@@ -37,29 +38,8 @@ export const useProducts = () => {
 	return useQuery({
 		queryKey: ['products'],
 		queryFn: async (): Promise<Product[]> => {
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-			try {
-				const response = await fetch(`/api/v1/store/${SUBDOMAIN()}/products`, {
-					signal: controller.signal,
-				});
-
-				clearTimeout(timeoutId);
-
-				if (!response.ok) {
-					throw new Error(`API error: ${response.status} ${response.statusText}`);
-				}
-
-				const result = await response.json();
-				return result.data;
-			} catch (error) {
-				clearTimeout(timeoutId);
-				if (error instanceof Error && error.name === 'AbortError') {
-					throw new Error('Request timeout');
-				}
-				throw error;
-			}
+			const { data } = await api.get(`v1/store/${SUBDOMAIN()}/products`);
+			return data.data;
 		},
 		enabled: typeof window !== 'undefined', // Prevent server-side execution
 	});
@@ -70,32 +50,8 @@ export const useProductsByCategory = (categoryId: string | undefined) => {
 	return useQuery({
 		queryKey: ['products', 'category', categoryId],
 		queryFn: async (): Promise<Product[]> => {
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-			try {
-				const response = await fetch(
-					`/api/v1/store/${SUBDOMAIN()}/products?category_id=${categoryId}`,
-					{
-						signal: controller.signal,
-					}
-				);
-
-				clearTimeout(timeoutId);
-
-				if (!response.ok) {
-					throw new Error(`API error: ${response.status} ${response.statusText}`);
-				}
-
-				const result = await response.json();
-				return result.data;
-			} catch (error) {
-				clearTimeout(timeoutId);
-				if (error instanceof Error && error.name === 'AbortError') {
-					throw new Error('Request timeout');
-				}
-				throw error;
-			}
+			const { data } = await api.get(`v1/store/${SUBDOMAIN()}/products?category_id=${categoryId}`);
+			return data.data;
 		},
 		enabled: typeof window !== 'undefined' && !!categoryId,
 	});
@@ -106,36 +62,14 @@ export const useProductsWithFilters = (categoryId?: string, search?: string) => 
 	return useQuery({
 		queryKey: ['products', 'filtered', { categoryId, search }],
 		queryFn: async (): Promise<Product[]> => {
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 10000);
+			const params = new URLSearchParams();
+			if (categoryId) params.append('category_id', categoryId);
+			if (search) params.append('search', search);
+			const queryString = params.toString();
 
-			try {
-				const params = new URLSearchParams();
-				if (categoryId) params.append('category_id', categoryId);
-				if (search) params.append('search', search);
-				const queryString = params.toString();
-
-				const url = `/api/v1/store/${SUBDOMAIN()}/products${queryString ? `?${queryString}` : ''}`;
-
-				const response = await fetch(url, {
-					signal: controller.signal,
-				});
-
-				clearTimeout(timeoutId);
-
-				if (!response.ok) {
-					throw new Error(`API error: ${response.status} ${response.statusText}`);
-				}
-
-				const result = await response.json();
-				return result.data;
-			} catch (error) {
-				clearTimeout(timeoutId);
-				if (error instanceof Error && error.name === 'AbortError') {
-					throw new Error('Request timeout');
-				}
-				throw error;
-			}
+			const endpoint = `v1/store/${SUBDOMAIN()}/products${queryString ? `?${queryString}` : ''}`;
+			const { data } = await api.get(endpoint);
+			return data.data;
 		},
 		enabled: typeof window !== 'undefined',
 	});
@@ -146,29 +80,8 @@ export const useProduct = (id: string | undefined) => {
 	return useQuery({
 		queryKey: ['product', id],
 		queryFn: async (): Promise<Product> => {
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-			try {
-				const response = await fetch(`/api/v1/store/${SUBDOMAIN()}/products/${id}`, {
-					signal: controller.signal,
-				});
-
-				clearTimeout(timeoutId);
-
-				if (!response.ok) {
-					throw new Error(`API error: ${response.status} ${response.statusText}`);
-				}
-
-				const result = await response.json();
-				return result.data;
-			} catch (error) {
-				clearTimeout(timeoutId);
-				if (error instanceof Error && error.name === 'AbortError') {
-					throw new Error('Request timeout');
-				}
-				throw error;
-			}
+			const { data } = await api.get(`v1/store/${SUBDOMAIN()}/products/${id}`);
+			return data.data;
 		},
 		enabled: typeof window !== 'undefined' && !!id,
 	});
