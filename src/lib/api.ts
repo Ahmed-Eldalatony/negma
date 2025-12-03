@@ -1,4 +1,4 @@
-const BASE_URL = '/api/';
+const BASE_URL = 'https://api.halakommers.com/v1';
 const TIMEOUT_DURATION = 10000; // 10 seconds
 
 export const api = {
