@@ -52,7 +52,7 @@ const checkoutSchema = z.object({
 	primaryPhone: z.string().optional(),
 	additionalPhone: z.string().optional(),
 	detailedAddress: z.string().min(10, { message: 'العنوان التفصيلي مطلوب' }),
-	orderNotes: z.string().optional(),
+	orderNotes: z.string().min(1, { message: 'ملاحظات العميل مطلوبة' }),
 });
 
 const CheckoutPage = () => {
@@ -362,7 +362,7 @@ const CheckoutPage = () => {
 								{/* Order Notes */}
 								<div className="relative">
 									<Label htmlFor="orderNotes" className="text-sm font-medium text-foreground mb-1">
-										ملاحظات الطلب (اختياري)
+										ملاحظات الطلب
 									</Label>
 									<div className="relative">
 										<Textarea
@@ -372,6 +372,9 @@ const CheckoutPage = () => {
 											{...register('orderNotes')}
 										/>
 									</div>
+									{errors.orderNotes && (
+										<p className="text-sm text-destructive mt-1">{errors.orderNotes.message}</p>
+									)}
 								</div>
 							</div>
 

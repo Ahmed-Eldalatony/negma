@@ -48,7 +48,6 @@ const OrderForm = ({ prices, currency, productId }: OrderFormProps) => {
 		register,
 		handleSubmit,
 		formState: { errors },
-		setValue,
 	} = useForm<OrderFormData>({
 		resolver: zodResolver(orderFormSchema),
 		defaultValues: {
