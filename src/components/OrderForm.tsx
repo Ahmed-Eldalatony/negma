@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { GccPhoneInput } from '@/components/ui/phone-number-input';
 
 interface OrderFormProps {
 	prices?: {
@@ -174,7 +173,7 @@ const OrderForm = ({ prices, currency, productId }: OrderFormProps) => {
 					{/* Phone */}
 					<div className="space-y-2">
 						<Label className="text-sm">رقم الهاتف</Label>
-						<GccPhoneInput onChange={(value) => setValue('phone', value)} countryCode="" />
+						<Input type="tel" {...register('phone')} />
 						{errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
 					</div>
 

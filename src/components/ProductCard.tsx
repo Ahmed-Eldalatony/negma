@@ -1,8 +1,8 @@
 import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
-import { Heart } from 'lucide-react';
+
 import type { Product } from '@/shared/mock-data';
-import { useFavoritesStore } from '@/store';
+
 import { useCurrency } from '@/hooks/useCurrency';
 import { convertPrice, formatPrice } from '@/lib/utils';
 
@@ -11,7 +11,6 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-	const { toggleFavorite, isFavorite } = useFavoritesStore();
 	const { currency } = useCurrency();
 
 	const convertedPrice = currency
@@ -32,12 +31,6 @@ export default function ProductCard({ product }: ProductCardProps) {
 				? `$${product.originalPrice.toFixed(2)}`
 				: null;
 
-	const handleFavoriteClick = (e: React.MouseEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-		toggleFavorite(product.id);
-	};
-
 	return (
 		<Link to={`/product/${product.id}`}>
 			<div
@@ -54,16 +47,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 							{product.discount}% خصم
 						</Badge>
 					)}
-					<button
-						onClick={handleFavoriteClick}
-						className="absolute top-2 left-2 z-10 rounded-full bg-white/80 p-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-white"
-					>
-						<Heart
-							className={`h-5 w-5 ${
-								isFavorite(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'
-							}`}
-						/>
-					</button>
+
 					<img
 						src={product.image}
 						alt={product.nameAr}

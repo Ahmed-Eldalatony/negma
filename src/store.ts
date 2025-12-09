@@ -60,61 +60,6 @@ export const useCounterStore = create<{
 	reset: () => set({ count: 0 }),
 }));
 
-export const useFavoritesStore = create<{
-	favorites: string[];
-	addFavorite: (productId: string) => void;
-	removeFavorite: (productId: string) => void;
-	toggleFavorite: (productId: string) => void;
-	isFavorite: (productId: string) => boolean;
-}>()((set, get) => {
-	// Load initial state from localStorage
-	const loadFromStorage = () => {
-		if (typeof window === 'undefined') return [];
-		try {
-			const stored = localStorage.getItem('favorites-storage');
-			const parsed = stored ? JSON.parse(stored) : [];
-			return Array.isArray(parsed) ? parsed : [];
-		} catch {
-			return [];
-		}
-	};
-
-	// Save to localStorage
-	const saveToStorage = (favorites: string[]) => {
-		if (typeof window === 'undefined') return;
-		try {
-			localStorage.setItem('favorites-storage', JSON.stringify(favorites));
-		} catch (error) {
-			console.error('Failed to save favorites to localStorage:', error);
-		}
-	};
-
-	return {
-		favorites: loadFromStorage(),
-		addFavorite: (productId: string) =>
-			set((state) => {
-				const newFavorites = [...new Set([...state.favorites, productId])];
-				saveToStorage(newFavorites);
-				return { favorites: newFavorites };
-			}),
-		removeFavorite: (productId: string) =>
-			set((state) => {
-				const newFavorites = state.favorites.filter((id) => id !== productId);
-				saveToStorage(newFavorites);
-				return { favorites: newFavorites };
-			}),
-		toggleFavorite: (productId: string) => {
-			const { favorites, addFavorite, removeFavorite } = get();
-			if (favorites.includes(productId)) {
-				removeFavorite(productId);
-			} else {
-				addFavorite(productId);
-			}
-		},
-		isFavorite: (productId: string) => get().favorites.includes(productId),
-	};
-});
-
 export const useCartStore = create<{
 	cart: { id: string; quantity: number }[];
 	addToCart: (productId: string, quantity?: number) => void;

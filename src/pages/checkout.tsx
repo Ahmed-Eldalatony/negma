@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { api } from '@/lib/api';
 import PaymentMethodPage from '@/components/PaymentMethodPage';
-import { GccPhoneInput } from '@/components/ui/phone-number-input';
+
 import { useStoreCountryStore } from '@/store';
 // import { useStore } from '@/hooks/useStoreData'; // Removed/Commented: See note below
 import { useProducts } from '@/hooks/useProducts';
@@ -94,15 +94,6 @@ const CheckoutPage = () => {
 
 	// Removed formValues since we're now passing a getter function to PaymentMethodPage
 
-	const handlePrimaryPhoneChange = useCallback(
-		(value: string) => setValue('primaryPhone', value),
-		[setValue]
-	);
-	const handleAdditionalPhoneChange = useCallback(
-		(value: string) => setValue('additionalPhone', value),
-		[setValue]
-	);
-
 	useEffect(() => {
 		if (hasLoaded) return;
 		const data = localStorage.getItem('order-data');
@@ -137,7 +128,7 @@ const CheckoutPage = () => {
 					// FIX 2: Prevent unnecessary state updates if data is same (React strict mode safety)
 					const newCities = response.data.data || [];
 					// Only update state if the cities actually changed
-					setCities(prevCities => {
+					setCities((prevCities) => {
 						if (JSON.stringify(prevCities) !== JSON.stringify(newCities)) {
 							return newCities;
 						}
@@ -325,10 +316,10 @@ const CheckoutPage = () => {
 									<Label className="text-sm font-medium text-foreground mb-1">
 										رقم الهاتف الأساسي
 									</Label>
-									<GccPhoneInput
+									<Input
+										type="tel"
 										value={watch('primaryPhone')}
-										onChange={handlePrimaryPhoneChange}
-										countryCode=""
+										onChange={(e) => setValue('primaryPhone', e.target.value)}
 									/>
 								</div>
 
@@ -337,10 +328,10 @@ const CheckoutPage = () => {
 									<Label className="text-sm font-medium text-foreground mb-1">
 										رقم هاتف إضافي (اختياري)
 									</Label>
-									<GccPhoneInput
+									<Input
+										type="tel"
 										value={watch('additionalPhone')}
-										onChange={handleAdditionalPhoneChange}
-										countryCode=""
+										onChange={(e) => setValue('additionalPhone', e.target.value)}
 									/>
 								</div>
 
