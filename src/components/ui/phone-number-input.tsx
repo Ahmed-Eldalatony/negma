@@ -9,7 +9,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
-// 1. Updated data for GCC countries and Egypt
 const GCC_COUNTRIES = [
 	{
 		name: 'Bahrain',
@@ -85,14 +84,12 @@ interface GccPhoneInputProps {
 }
 
 export const GccPhoneInput = ({ value, onChange, className, countryCode }: GccPhoneInputProps) => {
-	// Default to the first country in the list (Bahrain after sorting)
 	const defaultCountry = GCC_COUNTRIES[0];
 
 	const [selectedCountry, setSelectedCountry] = useState(defaultCountry);
 	const [phoneNumber, setPhoneNumber] = useState('');
 	const [error, setError] = useState('');
 
-	// Update selected country when countryCode prop changes
 	useEffect(() => {
 		if (countryCode) {
 			const country = GCC_COUNTRIES.find((c) => c.code === countryCode);
@@ -102,7 +99,6 @@ export const GccPhoneInput = ({ value, onChange, className, countryCode }: GccPh
 		}
 	}, [countryCode]);
 
-	// --- Validation Function ---
 	const validateNumber = (number: string, country: typeof defaultCountry) => {
 		if (number.length === 0) {
 			return '';
@@ -124,9 +120,12 @@ export const GccPhoneInput = ({ value, onChange, className, countryCode }: GccPh
 			if (country) {
 				number = value.slice(country.dialCode.length);
 			} else if (value.startsWith('0')) {
-				// Assume Egypt
-				country = GCC_COUNTRIES.find((c) => c.code === 'EG');
+				country = GCC_COUNTRIES.find((c) => c.code === 'SA');
 				number = value.slice(1);
+			} else if (selectedCountry && !value.startsWith('+') && !value.startsWith('0')) {
+				// Assume digits for the selected country
+				number = value;
+				country = selectedCountry;
 			}
 			if (country) {
 				setSelectedCountry(country);
@@ -137,13 +136,13 @@ export const GccPhoneInput = ({ value, onChange, className, countryCode }: GccPh
 			setPhoneNumber('');
 			setError('');
 		}
-	}, [value]);
+	}, [value, selectedCountry]);
 
 	// Effect to emit the full number and validate
 	useEffect(() => {
-		// Return just the phone number digits for API compatibility
+		// Return the full phone number with country code
 		if (onChange) {
-			onChange(phoneNumber);
+			onChange(selectedCountry.dialCode + phoneNumber);
 		}
 		setError(validateNumber(phoneNumber, selectedCountry));
 	}, [selectedCountry, phoneNumber, onChange]);

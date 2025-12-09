@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, TruckIcon, Award, Timer, Star } from 'lucide-react';
 import {
@@ -27,10 +26,9 @@ interface HeroSectionProps {
 		currency: string;
 		rate_to_usd: string | number;
 	};
-	onOrderClick: () => void;
 }
 
-const HeroSection = ({ product, productImages, currency, onOrderClick }: HeroSectionProps) => {
+const HeroSection = ({ product, productImages, currency }: HeroSectionProps) => {
 	const { storedData } = useStore();
 	const rate = currency
 		? typeof currency.rate_to_usd === 'string'
@@ -171,15 +169,6 @@ const HeroSection = ({ product, productImages, currency, onOrderClick }: HeroSec
 				</div>
 
 				{/* Additional Details */}
-
-				{/* CTA Button */}
-				<Button
-					size="lg"
-					onClick={onOrderClick}
-					className="w-full text-sm py-5 rounded-lg shadow-soft transition-all bg-primary hover:bg-primary/90 text-primary-foreground font-bold mb-2"
-				>
-					🛒 اطلب الآن - الدفع عند الاستلام
-				</Button>
 
 				{/* Trust */}
 				<p className="text-xs text-center text-slate-950">

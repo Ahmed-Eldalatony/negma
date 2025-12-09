@@ -25,11 +25,11 @@ type PaymentMethod = {
 
 const PaymentMethodPage = ({
 	onPaymentComplete,
-	checkoutData,
+	getCheckoutData,
 	cart,
 }: {
 	onPaymentComplete: (redirectUrl?: string) => void;
-	checkoutData: Record<string, unknown>;
+	getCheckoutData: () => Record<string, unknown>;
 	cart: { id: string; quantity: number }[];
 }) => {
 	const [selectedMethod, setSelectedMethod] = useState<string>('');
@@ -74,6 +74,9 @@ const PaymentMethodPage = ({
 			alert('يرجى اختيار طريقة الدفع');
 			return;
 		}
+
+		// Get current checkout data
+		const checkoutData = getCheckoutData();
 
 		// Validate required fields
 		if (
