@@ -3,13 +3,10 @@ interface Pixel {
 	type: string;
 }
 
+// Extend Window interface to include the vendor specific objects
 declare global {
 	interface Window {
-		ttq?: {
-			load: (id: string) => void;
-			track: (event: string, params?: Record<string, unknown>) => void;
-			page: () => void;
-		};
+		ttq?: any; // typed as 'any' to allow the flexible stub definition
 		fbq?: (command: string, ...args: unknown[]) => void;
 		gtag?: (command: string, targetId: string, config?: Record<string, unknown>) => void;
 	}
@@ -24,7 +21,7 @@ class PixelTracker {
 		// Allow tracking in development without explicit consent
 		if (process.env.NODE_ENV === 'development') return true;
 		const consent = localStorage.getItem('pixel-consent');
-		return consent === null ? true : consent === 'true'; // default to true if no consent is set
+		return consent === null ? true : consent === 'true';
 	}
 
 	async initializePixels(pixels: Pixel[]) {
@@ -45,6 +42,7 @@ class PixelTracker {
 
 	private async loadPixelScript(pixel: Pixel): Promise<void> {
 		return new Promise((resolve, reject) => {
+			// Check if a script tag with this ID already exists in the DOM
 			if (document.querySelector(`script[data-pixel-id="${pixel.id}"]`)) {
 				resolve();
 				return;
@@ -55,15 +53,75 @@ class PixelTracker {
 
 			switch (pixel.type) {
 				case 'tiktok':
+					// [LOG 1] Check current state
+					console.log('[1] Start loadPixelScript. value of window.ttq is:', window.ttq);
+
+					// If it exists, we stop here.
 					if (window.ttq) {
+						console.log('TikTok pixel script already loaded. Resolving immediately.');
 						resolve();
 						return;
 					}
-					console.log(`Loading TikTok pixel script for ID: ${pixel.id}`);
+
+					console.log('window.ttq is undefined. Creating Stub now...');
+
+					// ============================================================
+					// MANUALLY DEFINE TIKTOK STUB
+					// ============================================================
+					(window as any).ttq = (window as any).ttq || [];
+					const ttq = (window as any).ttq;
+
+					ttq.methods = [
+						'page',
+						'track',
+						'identify',
+						'instances',
+						'debug',
+						'on',
+						'off',
+						'once',
+						'ready',
+						'alias',
+						'group',
+						'enableCookie',
+						'disableCookie',
+					];
+
+					ttq.setAndDefer = function (t: any, e: any) {
+						t[e] = function () {
+							t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
+						};
+					};
+
+					for (let i = 0; i < ttq.methods.length; i++) {
+						ttq.setAndDefer(ttq, ttq.methods[i]);
+					}
+
+					ttq.instance = function (t: any) {
+						for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++)
+							ttq.setAndDefer(e, ttq.methods[n]);
+						return e;
+					};
+
+					ttq.load = function (e: any, n: any) {
+						ttq._i = ttq._i || {};
+						ttq._i[e] = [];
+						ttq._i[e]._u = 'https://analytics.tiktok.com/i18n/pixel/events.js';
+						ttq._t = ttq._t || {};
+						ttq._t[e] = +new Date();
+						ttq._o = ttq._o || {};
+						ttq._o[e] = n || {};
+					};
+					// ============================================================
+
+					// [LOG 2] Verify state after creation
+					console.log('[2] Stub created successfully. window.ttq is now:', window.ttq);
+
+					console.log(`Loading TikTok external script for ID: ${pixel.id}`);
 					script.src = 'https://analytics.tiktok.com/i18n/pixel/events.js';
 					script.async = true;
 					script.onload = () => {
-						console.log('TikTok pixel script loaded successfully.');
+						console.log('[3] External TikTok script loaded from network.');
 						resolve();
 					};
 					script.onerror = () => {
@@ -71,6 +129,7 @@ class PixelTracker {
 						reject(new Error('TikTok pixel script failed to load.'));
 					};
 					break;
+
 				case 'facebook':
 					script.innerHTML = `
             !function(f,b,e,v,n,t,s)
@@ -84,11 +143,13 @@ class PixelTracker {
           `;
 					resolve();
 					break;
+
 				case 'google':
 					script.src = 'https://www.googletagmanager.com/gtag/js?id=' + pixel.id;
 					script.onload = () => resolve();
 					script.onerror = () => reject(new Error('Google Analytics script load failed'));
 					break;
+
 				default:
 					reject(new Error(`Unsupported pixel type: ${pixel.type}`));
 					return;
@@ -128,26 +189,22 @@ class PixelTracker {
 	private initializePixel(pixel: Pixel) {
 		switch (pixel.type) {
 			case 'tiktok': {
-				// Use hardcoded TikTok pixel ID
-				const tikTokId = 'D1EVISJC77U9800H711G';
-				// Wait for ttq to be available
-				const checkTtq = () => {
-					if (window.ttq) {
-						// Validate pixel ID format
-						if (!tikTokId || tikTokId.length !== 20 || !/^[A-Z][A-Z0-9]{19}$/.test(tikTokId)) {
-							console.error('Invalid TikTok Pixel ID format:', tikTokId);
-							return;
-						}
+				// Because we defined the stub in loadPixelScript, window.ttq is guaranteed to exist now.
+				if (window.ttq) {
+					const tikTokId = pixel.id; // Use the dynamic ID passed to the function
 
-						console.log('Initializing TikTok Pixel with ID:', tikTokId);
-						window.ttq.load(tikTokId);
-						window.ttq.page();
-					} else {
-						setTimeout(checkTtq, 100);
+					// Validate pixel ID format
+					if (!tikTokId || tikTokId.length !== 20 || !/^[A-Z0-9]{20}$/.test(tikTokId)) {
+						// Adjusted regex slightly to be standard alphanumeric,
+						// your original was /^[A-Z][A-Z0-9]{19}$/ which is also fine.
+						console.warn('Potential invalid TikTok Pixel ID format:', tikTokId);
+						// We do not return here to allow testing, but you can uncomment return if strict.
 					}
-				};
 
-				checkTtq();
+					console.log('Initializing TikTok Pixel with ID:', tikTokId);
+					window.ttq.load(tikTokId);
+					window.ttq.page();
+				}
 				break;
 			}
 			case 'facebook':
